@@ -1,0 +1,104 @@
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username:
+    password:
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+foa:
+  FOAId: "AAUCloud"
+  CloudAPIUrl: "https://eu-wap.tplinkcloud.com"
+
+  getNoOfUnsuccessfulCon: 5
+  connectionHaltDuration: 15
+
+  FOGConnectionConfig:
+    generateDeviceFOUrl: "http://localhost:8083/fog/generateDeviceFO"
+    shouldGenerateDeviceFOUrl: "http://localhost:8083/fog/shouldGenerateDeviceFO"
+
+  FMANConnectionConfig:
+    URItoSendFO: "http://localhost:8089/fmanproxy/flexoffer"
+    HeartbeatURI: "http://localhost:8089/fmanproxy/schedules"
+    MeasurementURI: "http://localhost:8089/fmanproxy/measurement"
+    LoginURI: "http://localhost:8089/user/login"
+    RegisterURI: "http://localhost:8089/fmanproxy/register"
+    RegisterAllUsersURI: "http://localhost:8089/fmanproxy/registerMultipleUsers"
+      GetAllUsersURI: "http://localhost:8089/fmanproxy/getAllUserNames"
+    ContractURI: "http://localhost:8089/fmanproxy/contract"
+    BillURI: "http://localhost:8089/fmanproxy/bill"
+
+  SimulatedDeviceServiceConfig:
+    baseURi: "http://localhost:5000/api/v1.0"
+    usersUri: "/users"
+    newTokenUri: "/users/get_token"
+    devicesUri: "/devices"
+    startDeviceUri: "/devices/start"
+    stopDeviceUri: "/devices/stop"
+    devicePowerUri: "/devices/live_power"
+    deviceEnergyUri: "/devices/energy"
+    deviceStatusUri: "/devices/status"
+    deviceConsumptionUri: "/devices/consumption"
+    apiToken: ""
+    user:
+    password:
+
+  MqttServiceConfig:
+    foaAccountUser:
+    foaAccountPassword:
+    user:
+    password:
+    clientId: "clientAAU"
+    host: "ssl://cloudio-broker.esr.ch:8883"
+    waitTime: 5
+    qos: 1
+    trustStore: "${HOME}/ca-cert.jks"
+    trustStorePassword:
+    houseListUrl: "https://cloudio-data.esr.ch/dc/list.php?who=aau"
+    deviceStatus:
+      nodes:
+        - gateway
+      objects:
+        - relay1State
+        - relay2State
+      attributes:
+        - datapoint
+    deviceControl:
+      nodes:
+        - gateway
+      objects:
+        - relay1Control
+        - relay2Control
+      attributes:
+        - parameter
+    ambientTemperature:
+      nodes:
+        - ambientSensor-1
+      objects:
+        - temperature
+        - relHumidity
+      attributes:
+        - datapoint
+    boilerTemperature:
+      nodes:
+        - boilerSensor-1
+      objects:
+        - temperature
+      attributes:
+        - datapoint
+    devicePowerMeters:
+      nodes:
+        - powerMeter-1
+        - powerMeter-2
+        - powerMeter-3
+      objects:
+        - ampsTotal
+        - voltsTotal
+        - wattsTotal
+        - kWhTotal
+      attributes:
+        - datapoint

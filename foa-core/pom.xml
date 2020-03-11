@@ -1,0 +1,53 @@
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.goflex.wp2</groupId>
+        <artifactId>ATP</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>foa-core</artifactId>
+    <name>GOFLEX::WP2::FOA-CORE</name>
+    <dependencies>
+        <dependency>
+            <groupId>org.goflex.wp2</groupId>
+            <artifactId>core-entities</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>${spring-boot.version}</version>
+        </dependency>
+        <!--<dependency>-->
+        <!--<groupId>org.immutables</groupId>-->
+        <!--<artifactId>value</artifactId>-->
+        <!--<version>${immutables.version}</version>-->
+        <!--<scope>provided</scope>-->
+        <!--</dependency>-->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lambok.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.twilio.sdk</groupId>
+            <artifactId>twilio</artifactId>
+            <version>7.20.0</version>
+        </dependency>
+
+        <!-- added for MQTT (Swiss Case)-->
+        <dependency>
+            <groupId>org.springframework.integration</groupId>
+            <artifactId>spring-integration-mqtt</artifactId>
+            <!--	<version>5.0.5.RELEASE</version>-->
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

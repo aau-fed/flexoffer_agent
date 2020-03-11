@@ -1,0 +1,57 @@
+version: '3.6'
+
+services:
+  foa-app:
+    container_name: foa-app-container
+    image: cloud.canister.io:5000/muhaftab/foa-app:latest
+    #image: repo.treescale.com/muhaftab/foa-app:latest
+    network_mode: "host"
+    environment:
+      profile: container
+      port: 8081
+    stdin_open: true
+    tty: true
+    restart: always
+    build:
+      context: ./foa-app
+      dockerfile: Dockerfile
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://localhost:3100/api/prom/push"
+  fo-generator:
+    container_name: fo-generator-container
+    image: cloud.canister.io:5000/muhaftab/fo-generator:latest
+    #image: repo.treescale.com/muhaftab/fo-generator:latest
+    network_mode: "host"
+    environment:
+      profile: container
+      port: 8083
+    stdin_open: true
+    tty: true
+    restart: always
+    build:
+      context: ./fo-generator
+      dockerfile: Dockerfile
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://localhost:3100/api/prom/push"
+  sys-monitor:
+    container_name: sys-monitor-container
+    image: cloud.canister.io:5000/muhaftab/sys-monitor:latest
+    #image: repo.treescale.com/muhaftab/sys-monitor:latest
+    network_mode: "host"
+    environment:
+      profile: container
+      port: 8088
+    stdin_open: true
+    tty: true
+    restart: always
+    build:
+      context: ./sys-monitor
+      dockerfile: Dockerfile
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://localhost:3100/api/prom/push"
