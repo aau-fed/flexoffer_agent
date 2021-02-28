@@ -52,8 +52,8 @@ class SimulatedDeviceServiceUnitTest {
     private static final String baseUrl = "http://goflex-atp.cs.aau.dk:5000";
     private static final String userNameValid = "valid-test-user";
     private static final String userNameInvalid = "invalid-test-user";
-    private String devicePlugIdValid = "valid-mock-device-id";
-    private String devicePlugIdInvalid = "invalid-mock-device-id";
+    private final String devicePlugIdValid = "valid-mock-device-id";
+    private final String devicePlugIdInvalid = "invalid-mock-device-id";
 
     @Autowired
     private SimulatedDeviceService simulatedDeviceService;

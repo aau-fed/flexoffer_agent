@@ -1,0 +1,119 @@
+<div class="col-md-9 dashboard-container" ng-hide="hidex">
+
+    <div class="accordion-content-title" style="margin-bottom: 6px; cursor: pointer;"
+        title="{{'TOOLTIP_DEVICE_LIST' | translate}}">
+
+        <span class="acc-devicelist acc-device-id-title" ng-click="sort('deviceId')">
+            {{'DEVICELIST_DEVICE_ID' | translate}}
+            <span class="glyphicon sort-icon" ng-show="sortKey=='deviceId'"
+                ng-class="{'glyphicon-chevron-up':reverse,'glyphicon-chevron-down':!reverse}"></span>
+        </span>
+
+        <span ng-show="role=='ROLE_ADMIN'" class="acc-devicelist acc-device-username-title" ng-click="sort('userName')">
+            {{'DEVICELIST_USERNAME' | translate}}
+            <span class="glyphicon sort-icon" ng-show="sortKey=='userName'"
+                ng-class="{'glyphicon-chevron-up':reverse,'glyphicon-chevron-down':!reverse}"></span>
+        </span>
+
+        <span class="acc-devicelist acc-device-alias-title" ng-click="sort('alias')">
+            {{'DEVICELIST_ALIAS' | translate}}
+            <span class="glyphicon sort-icon" ng-show="sortKey=='alias'"
+                ng-class="{'glyphicon-chevron-up':reverse,'glyphicon-chevron-down':!reverse}"></span>
+        </span>
+
+        <span class="acc-devicelist acc-device-type-title" ng-click="sort('deviceType')">
+            {{'DEVICELIST_DEVICE_TYPE' | translate}}
+            <span class="glyphicon sort-icon" ng-show="sortKey=='deviceType'"
+                ng-class="{'glyphicon-chevron-up':reverse,'glyphicon-chevron-down':!reverse}"></span>
+        </span>
+        <span class="acc-devicelist acc-group-name-title" ng-click="sort('groupName')">
+            {{'DEVICELIST_GROUP_NAME' | translate}}
+            <span class="glyphicon sort-icon" ng-show="sortKey=='groupName'"
+                ng-class="{'glyphicon-chevron-up':reverse,'glyphicon-chevron-down':!reverse}"></span>
+        </span>
+        <span class="acc-devicelist acc-latest-power-title" ng-click="sort('power')">
+            {{'DEVICELIST_POWER' | translate}}
+            <span class="glyphicon sort-icon" ng-show="sortKey=='power'"
+                ng-class="{'glyphicon-chevron-up':reverse,'glyphicon-chevron-down':!reverse}"></span>
+        </span>
+        <span class="acc-devicelist acc-voltage-title" ng-click="sort('voltage')">
+            {{'DEVICELIST_VOLTAGE' | translate}}
+            <span class="glyphicon sort-icon" ng-show="sortKey=='voltage'"
+                ng-class="{'glyphicon-chevron-up':reverse,'glyphicon-chevron-down':!reverse}"></span>
+        </span>
+        <span class="acc-devicelist acc-state-title" ng-click="sort('deviceState')">
+            {{'DEVICELIST_STATE' | translate}}
+            <span class="glyphicon sort-icon" ng-show="sortKey=='deviceState'"
+                ng-class="{'glyphicon-chevron-up':reverse,'glyphicon-chevron-down':!reverse}"></span>
+        </span>
+        <span class="acc-devicelist acc-flex-toggle-title" ng-click="sort('isFlexible')">
+            {{'DEVICELIST_FLEX_TOGGLE' | translate}}
+            <span class="glyphicon sort-icon" ng-show="sortKey=='isFlexible'"
+                ng-class="{'glyphicon-chevron-up':reverse,'glyphicon-chevron-down':!reverse}"></span>
+        </span>
+    </div>
+
+    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+        <div class="panel panel-default"
+            dir-paginate="device in deviceSummaryList | orderBy:sortKey:reverse | filter:search | itemsPerPage:pageSize">
+            <div class="panel-heading" role="tab" id="heading_{{$index}}">
+                <h4 class="panel-title">
+                    <span class="acc-devicelist acc-device-id">
+                        <a href="#!/device/{{device.deviceId}}">
+                            {{ device.deviceId.split('@')[1].substring(device.deviceId.split('@')[1].length-8) }}
+                        </a>
+                    </span>
+                    <span ng-show="role == 'ROLE_ADMIN'"
+                        class="acc-devicelist acc-device-username">{{ device.deviceId.split('@')[0] }}</span>
+                    <span class="acc-devicelist acc-device-alias">{{ device.alias }}</span>
+                    <span class="acc-devicelist acc-device-type">{{ device.deviceType }}</span>
+                    <span class="acc-devicelist acc-group-name">{{ device.groupName }}</span>
+                    <span class="acc-devicelist acc-latest-power">{{ device.power }}</span>
+                    <span class="acc-devicelist acc-voltage">{{ device.voltage }}</span>
+
+                    <span class="acc-devicelist acc-state" ng-switch="device.deviceState">
+                        <span ng-switch-when="Idle" title="{{'TOOLTIP_DEVICE_STATE_IDLE' | translate}}">
+                            <img src="img/yellow.png">
+                        </span>
+                        <span ng-switch-when="Disconnected" title="{{'TOOLTIP_DEVICE_STATE_DISCONNECTED' | translate}}">
+                            <img src="img/red.png">
+                        </span>
+                        <span ng-switch-when="Operating" title="{{'TOOLTIP_DEVICE_STATE_OPERATING' | translate}}">
+                            <img src="img/green.png">
+                        </span>
+                        <span ng-switch-default title="{{'TOOLTIP_DEVICE_STATE_UNKNOWN' | translate}}">
+                            <img src="img/gray.png">
+                        </span>
+                    </span>
+
+                    <span class="acc-devicelist acc-flex-toggle" title="{{'TOOLTIP_FLEXIBILITY_SWITCH' | translate}}">
+                        <label class="switch">
+                            <input type="checkbox" ng-click="toggleDeviceFlexibility(device)"
+                                ng-model="device.flexible">
+                            <span class="slider round"></span>
+                        </label>
+                    </span>
+            </div>
+
+
+            </h4>
+        </div>
+
+    </div>
+
+    <dir-pagination-controls max-size="5" direction-links="true" boundary-links="true">
+    </dir-pagination-controls>
+
+    <div class="col-md-2 pull-right">
+        <label translate>DEVICELIST_DEVICES_PER_PAGE</label>
+        <input class="form-control" type="number" min="1" max="100" ng-model="pageSize">
+    </div>
+
+    <div class="col-md-2 pull-right">
+        <label translate>DEVICELIST_SEARCH</label>
+        <input class="form-control" type="text" ng-model="search"
+            placeholder="{{'DEVICELIST_SEARCH_IN_LIST' | translate}}">
+    </div>
+
+</div>
+</div>

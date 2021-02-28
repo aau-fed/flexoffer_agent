@@ -43,21 +43,21 @@ public interface FlexOfferProviderIf {
      * @param flexOfferId
      * @return
      */
-    public FlexOffer getFlexOffer(int flexOfferId) throws FlexOfferException;
+    FlexOffer getFlexOffer(int flexOfferId) throws FlexOfferException;
 
     /**
      * Get a collection of all producer flex offers
      *
      * @params flexOffers
      */
-    public FlexOffer[] getFlexOffers();
+    FlexOffer[] getFlexOffers();
 
     /**
      * Get the state of a flex offer
      *
      * @param flexOfferId
      */
-    public FlexOfferState getFlexOfferState(int flexOfferId);
+    FlexOfferState getFlexOfferState(int flexOfferId);
 
     /**
      * Set the state of a flex offer
@@ -65,7 +65,7 @@ public interface FlexOfferProviderIf {
      * @param flexOfferId
      * @throws FlexOfferException
      */
-    public void setFlexOfferState(int flexOfferId, FlexOfferState flexOfferState, String stateReason) throws FlexOfferException;
+    void setFlexOfferState(int flexOfferId, FlexOfferState flexOfferState, String stateReason) throws FlexOfferException;
 
     /**
      * Assigns a flex offer schedule to a flex offer
@@ -73,7 +73,7 @@ public interface FlexOfferProviderIf {
      * @param flexOfferId
      * @throws FlexOfferException
      */
-    public void createFlexOfferSchedule(int flexOfferId, FlexOfferSchedule flexOfferSchedule) throws FlexOfferException;
+    void createFlexOfferSchedule(int flexOfferId, FlexOfferSchedule flexOfferSchedule) throws FlexOfferException;
 
     /**
      * Get the schedule of a flex offer
@@ -81,7 +81,7 @@ public interface FlexOfferProviderIf {
      * @param flexOfferId
      * @return
      */
-    public FlexOfferSchedule getFlexOfferSchedule(int flexOfferId);
+    FlexOfferSchedule getFlexOfferSchedule(int flexOfferId);
 
     /**
      * Set the schedule of a flex offer
@@ -89,7 +89,7 @@ public interface FlexOfferProviderIf {
      * @param flexOfferId
      * @throws FlexOfferException
      */
-    public void setFlexOfferSchedule(int flexOfferId, FlexOfferSchedule flexOfferSch) throws FlexOfferException;
+    void setFlexOfferSchedule(int flexOfferId, FlexOfferSchedule flexOfferSch) throws FlexOfferException;
 
     /**
      * Remove the schedule from a flex offer
@@ -97,5 +97,5 @@ public interface FlexOfferProviderIf {
      * @param flexOfferId
      * @throws FlexOfferException
      */
-    public void deleteFlexOfferSchedule(int flexOfferId) throws FlexOfferException;
+    void deleteFlexOfferSchedule(int flexOfferId) throws FlexOfferException;
 }

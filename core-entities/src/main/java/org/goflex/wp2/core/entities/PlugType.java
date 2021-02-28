@@ -36,6 +36,6 @@ import javax.xml.bind.annotation.XmlEnum;
 @XmlEnum
 public enum PlugType {
     TPLink_HS110,
-    SwissCase,
+    MQTT,
     Simulated
 }

@@ -40,7 +40,7 @@ public enum OrganizationLoadControlState {
     Paused(1),
     Stopped(2);
 
-    private int value;
+    private final int value;
 
     OrganizationLoadControlState(int value) {
         this.value = value;

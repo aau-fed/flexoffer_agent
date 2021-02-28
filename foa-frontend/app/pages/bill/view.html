@@ -1,0 +1,141 @@
+<div class="col-md-9 sn-form sn-form-profile">
+    <div class="bill-header hidden-print">
+        <h2 class="title" translate>
+            REWARDS_TITLE
+        </h2>
+        <div class="form-group form-group-sm pull-left col-md-6 col-xs-12 form-bill">
+            <div class="col-sm-12">
+                <div class="form-group">
+                    <label class="col-sm-2 control-label"> {{'REWARDS_DATE' | translate}}:</label>
+                    <div class="col-sm-10 input-group">
+                        <div class="input-group-addon">
+                            <i class="glyphicon glyphicon-calendar">
+                            </i>
+                        </div>
+                        <input class="form-control" id="date-reward" name="date" type="text" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group form-group-sm pull-right col-md-3 col-xs-12 action-btns">
+            <button class="btn btn-default btn-sm" type="submit">
+                <i class="glyphicon glyphicon-download-alt">
+                </i>
+                {{'REWARDS_DOWNLOAD' | translate}}
+            </button>
+            <button class="btn btn-default btn-sm" type="submit" id="PrintBill">
+                <i class="glyphicon glyphicon-print">
+                </i>
+                {{'REWARDS_PRINT' | translate}}
+            </button>
+        </div>
+        <div class="clearfix">
+        </div>
+    </div>
+    <div class="table-responsive printContent">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>
+                        {{'REWARDS_ITEM' | translate}}
+                    </th>
+                    <th>
+                        {{'REWARDS_VALUE' | translate}}
+                    </th>
+                    <th>
+                        {{'REWARDS_PRICE' | translate}}
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        {{'REWARDS_NUM_OF_FOS' | translate}}
+                    </td>
+                    <td>
+                        <div for="noOfFlexoffers"> {{numFlexOffers}} </div>
+                    </td>
+                    <td>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        {{'REWARDS_FIXED_REWARD' | translate}}
+                    </td>
+                    <td>
+                    </td>
+                    <td>
+                        {{rewardFixed | currency: 'EUR'}}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        {{'REWARDS_TOTAL_TIME_FLEX' | translate}}
+                    </td>
+                    <td>
+                        {{totalTimeFlex}} {{'REWARDS_TIMESTAMP_UNITS' | translate}}
+                    </td>
+                    <td>
+                        {{rewardTotalTimeFlex | currency: 'EUR'}}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        {{'REWARDS_TOTAL_ENERGY_FLEX' | translate}}
+                    </td>
+                    <td>
+                        {{totalEnergyFlex}}
+                    </td>
+                    <td>
+                        {{rewardTotalEnergyFlex | currency: 'EUR'}}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        {{'REWARDS_NUM_DEFAULT_SCHED_DEV' | translate}}
+                    </td>
+                    <td>
+                        {{numCustomScheduleActivations}}
+                    </td>
+                    <td>
+                        {{rewardTotalSchedFixed | currency:'EUR'}}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        {{'REWARDS_SUM_SCHED_DEV' | translate}}
+                    </td>
+                    <td>
+                        {{totalStartTimeDeviations}} {{'REWARDS_TIMESTAMP_UNITS' | translate}}
+                    </td>
+                    <td>
+                        {{rewardTotalSchedEST | currency:'EUR'}}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        {{'REWARDS_SUM_ENERGY_DEV' | translate}}
+                    </td>
+                    <td>
+                        {{totalEnergyDeviations}} kWh
+                    </td>
+                    <td>
+                        {{rewardTotalSchedEnergy | currency:'EUR'}}
+                    </td>
+                </tr>
+                <tr>
+                    <th colspan="2">
+                        {{'REWARDS_TOTAL_REWARD' | translate}}
+                    </th>
+                    <th>
+                        <label for="ttl">
+                            {{rewardTotal | currency:'EUR'}}
+                        </label>
+                    </th>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="clearfix">
+    </div>
+</div>

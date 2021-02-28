@@ -2,8 +2,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username:
-    password:
+    username: # gmail account
+    password: # gmail account password
     properties:
       mail:
         smtp:
@@ -43,21 +43,21 @@ foa:
     deviceStatusUri: "/devices/status"
     deviceConsumptionUri: "/devices/consumption"
     apiToken: ""
-    user:
-    password:
+    user: "aau_foa"
+    password: "password"
 
   MqttServiceConfig:
     foaAccountUser:
     foaAccountPassword:
     user:
     password:
-    clientId:
-    host: "ssl://cloudio-broker.esr.ch:8883"
+    clientId: "clientAAU"
+    host: ${MQTT_HOST}
     waitTime: 5
     qos: 1
     trustStore:
     trustStorePassword:
-    houseListUrl: "https://cloudio-data.esr.ch/dc/list.php?who=aau"
+    houseListUrl: ${MQTT_HOUSE_LIST_URL}
     deviceStatus:
       nodes:
         - gateway
@@ -79,7 +79,7 @@ foa:
         - ambientSensor-1
       objects:
         - temperature
-        - relHumidity
+        #- relHumidity
       attributes:
         - datapoint
     boilerTemperature:
@@ -95,9 +95,9 @@ foa:
         - powerMeter-2
         - powerMeter-3
       objects:
-        - ampsTotal
-        - voltsTotal
+        #- ampsTotal
+        #- voltsTotal
         - wattsTotal
-        - kWhTotal
+        #- kWhTotal
       attributes:
         - datapoint

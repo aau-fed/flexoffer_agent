@@ -1,0 +1,163 @@
+<section class="main-content">
+    <div class="container-fluid">
+
+        <div class="pull-right">
+            <p>{{'CHANGE_LANGUAGE' | translate}}:</p>
+            <select style="height: 30px; margin-bottom: 10px;" class="form-control" ng-model="lang"
+                ng-change="changeLanguage()">
+                <option value="en" translate>BUTTON_LANG_EN</option>
+                <option value="de" translate>BUTTON_LANG_DE</option>
+            </select>
+        </div>
+
+
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+
+                <h2 class="title text-center" style="margin-bottom: 25px;">{{'SIGNUP_TITLE' | translate}}</h2>
+
+                <!-- MultiStep Form -->
+                <!-- https://codepen.io/designify-me/pen/qrJWpG -->
+                <form id="msform">
+
+                    <!-- progressbar -->
+                    <ul id="progressbar">
+                        <li ng-repeat="step in steps" ng-class="{active: $index<=getCurrentStepIndex()}">
+                            <span ng-switch on="step">
+                                <span ng-switch-when="Login Credentials">
+                                    {{'SIGNUP_LOGIN_CREDENTIALS' | translate}}
+                                </span>
+                                <span ng-switch-when="TP-Link Kasa Account Info">
+                                    {{'SIGNUP_TPLINK_ACCOUNT_INFO' | translate}}
+                                </span>
+                                <span ng-switch-when="User Details">
+                                    {{'SIGNUP_USER_DETAILS' | translate}}
+                                </span>
+                            </span>
+                        </li>
+                    </ul>
+
+                    <div ng-switch on="selection" style="font-size: large;">
+
+                        <!-- fieldsets -->
+                        <fieldset ng-switch-when="Login Credentials">
+                            <h2 class="fs-title">{{'SIGNUP_LOGIN_CREDENTIALS' | translate}}</h2>
+                            <h3 class="fs-subtitle">{{'SIGNUP_LOGIN_CREDENTIALS_SUBTITLE' | translate}}</h3>
+
+                            <input type="text" placeholder="{{'USER_USERNAME' | translate}} *"
+                                ng-model="formData.username" required>
+                            <input type="password" placeholder="{{'USER_PASSWORD' | translate}} *"
+                                ng-model="formData.password" required>
+                            <input type="password" placeholder="{{'USER_PASSWORD_REPEAT' | translate}} *"
+                                ng-model="formData.rePassword" required>
+
+                            <ul class="pager pull-right">
+                                <li ng-class="{disabled: !hasNextStep()}">
+                                    <a href="javascript:void(0);" style="font-size: 13px; font-weight: bold;"
+                                        ng-click="incrementStepIfUserNameAvailable()">{{'SIGNUP_NEXT_STEP' | translate}}
+                                        &rarr;</a>
+                                </li>
+                            </ul>
+                        </fieldset>
+
+                        <fieldset ng-switch-when="TP-Link Kasa Account Info">
+                            <h2 class="fs-title">{{'SIGNUP_TPLINK_ACCOUNT_INFO' | translate}}</h2>
+                            <h3 class="fs-subtitle">{{'SIGNUP_TPLINK_ACCOUNT_INFO_SUBTITLE' | translate}}</h3>
+
+                            <input type="text" placeholder="{{'USER_TPLINK_USERNAME' | translate}}"
+                                ng-model="formData.tpLinkUserName">
+                            <input type="password" placeholder="{{'USER_TPLINK_PASSWORD' | translate}}"
+                                ng-model="formData.tpLinkPassword" ng-required="formData.tpLinkUserName">
+                            <input type="password" placeholder="{{'USER_TPLINK_PASSWORD_REPEAT' | translate}}"
+                                ng-model="formData.reTpLinkPassword" ng-required="formData.tpLinkUserName">
+
+                            <ul class="pager pull-left">
+                                <li ng-class="{disabled: !hasPreviousStep()}">
+                                    <a href="javascript:void(0);" style="font-size: 13px; font-weight: bold;"
+                                        ng-click="decrementStep()">&larr;
+                                        {{'SIGNUP_PREVIOUS_STEP' | translate}}</a>
+                                </li>
+                            </ul>
+                            <ul class="pager pull-right">
+                                <li ng-class="{disabled: !hasNextStep()}">
+                                    <a href="javascript:void(0);" style="font-size: 13px; font-weight: bold;"
+                                        ng-click="skipTpLinkAccount()">{{'SIGNUP_SKIP' | translate}} &rarr;</a>
+                                </li>
+
+                                <li ng-class="{disabled: !hasNextStep()}">
+                                    <a href="javascript:void(0);" style="font-size: 13px; font-weight: bold;"
+                                        ng-click="incrementStepIfTpLinkAccountAvailable()">{{'SIGNUP_NEXT_STEP' | translate}}
+                                        &rarr;</a>
+                                </li>
+                            </ul>
+
+                        </fieldset>
+
+                        <fieldset ng-switch-when="User Details">
+                            <h2 class="fs-title">{{'SIGNUP_USER_DETAILS' | translate}}</h2>
+                            <h3 class="fs-subtitle">{{'SIGNUP_USER_DETAILS_SUBTITLE' | translate}}</h3>
+
+                            <select class="form-control" ng-model="formData.organizationId">
+                                <option value="">{{'SIGNUP_CHOOSE_DEMO_SITE' | translate}} *</option>
+                                <option value="10007">{{'SIGNUP_CYPRUS' | translate}}</option>
+                                <option value="10006">{{'SIGNUP_GERMANY' | translate}}</option>
+                                <option value="10004">{{'SIGNUP_SWISS' | translate}}</option>
+                                <option value="10001">{{'SIGNUP_DENMARK' | translate}}</option>
+                            </select>
+
+                            <div class="clear">&nbsp;</div>
+
+                            <div class="row">
+                                <div class="col-xs-2">
+                                    <select disabled="true" class="form-control"
+                                        ng-model="countryCodes[formData.organizationId]">
+                                        <option value="+357">+357</option>
+                                        <option value="+49">+49</option>
+                                        <option value="+41">+41</option>
+                                        <option value="+45">+45</option>
+                                    </select>
+                                </div>
+                                <div class="col-xs-10">
+                                    <input class="form-control" type="text" placeholder="{{'USER_PHONE' | translate}}"
+                                        ng-model="formData.phone">
+                                </div>
+                            </div>
+
+
+                            <div class="clear">&nbsp;</div>
+                            <div class="clear">&nbsp;</div>
+                            <div class="clear">&nbsp;</div>
+                            <div class="clear">&nbsp;</div>
+
+
+                            <ul class="pager pull-left">
+                                <li ng-class="{disabled: !hasPreviousStep()}">
+                                    <a href="javascript:void(0);" style="font-size: 13px; font-weight: bold;"
+                                        ng-click="decrementStep()">&larr;
+                                        {{'SIGNUP_PREVIOUS_STEP' | translate}}</a>
+                                </li>
+                            </ul>
+                            <div class="pull-right">
+                                <button style="margin:20px 0;" class="btn btn-success" ng-click="submit()">
+                                    {{'SIGNUP_SUBMIT' | translate}}
+                                </button>
+                            </div>
+
+                        </fieldset>
+                    </div>
+
+                </form>
+
+                <div class="dme_link text-center">
+                    <small class="form-text">
+                        {{'USER_ALREADY_HAVE_ACCOUNT' | translate}} <a href="#!/login"><strong>{{'LOGIN_TITLE' |
+                                translate}}</strong></a>
+                    </small>
+                </div>
+
+            </div>
+        </div>
+        <!-- /.MultiStep Form -->
+</section>
+</div>

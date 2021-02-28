@@ -1,0 +1,103 @@
+<div class="col-md-9 sn-form sn-form-profile">
+	<h2 class="title" style="margin-bottom: 25px;"><span translate>USER_USER_LIST</span> &nbsp; <a href="#!/user/add"
+			title="{{'USER_ADD_USER' | translate}}"><i class="icon ion-plus"></i></a></h2>
+	<div class="table-responsive">
+
+		<h4>{{'USER_LIST_ADMINS' | translate}}</h4>
+
+		<table class="table table-condensed">
+			<tr>
+				<th>Id</th>
+				<th ng-click="sort('userName')"><span translate>USER_USERNAME</span>
+					<span class="glyphicon sort-icon" ng-show="sortKey=='userName'"
+						ng-class="{'glyphicon-chevron-up':reverse,'glyphicon-chevron-down':!reverse}"></span>
+				</th>
+				<th ng-click="sort('email')"><span translate>USER_EMAIL</span>
+					<span class="glyphicon sort-icon" ng-show="sortKey=='email'"
+						ng-class="{'glyphicon-chevron-up':reverse,'glyphicon-chevron-down':!reverse}"></span>
+				</th>
+				<!-- <th ng-click="sort('tpLinkUserName')"><span translate>USER_TPLINK_USERNAME</span>
+					<span class="glyphicon sort-icon" ng-show="sortKey=='tpLinkUserName'"
+						ng-class="{'glyphicon-chevron-up':reverse,'glyphicon-chevron-down':!reverse}"></span>
+				</th> -->
+				<th><span translate>USER_ACTION</span></th>
+			</tr>
+			<tr class="panel panel-default"
+				dir-paginate="user in admins | orderBy:sortKey:reverse | filter:search | itemsPerPage:pageSize">
+				<!-- <td>{{$index + 1}}</td> -->
+				<td>{{user.id}}</td>
+				<td>{{user.userName}}</td>
+				<td>{{user.email}}</td>
+				<!-- <td>{{user.tpLinkUserName}}</td> -->
+				<td>
+					<a href="#!/profile/{{user.userName}}" title="Edit"><i class="icon ion-edit"></i></a>
+				</td>
+			</tr>
+
+		</table>
+	</div>
+
+	<div class="table-responsive">
+
+		<h4>{{'USER_LIST_PROSUMERS' | translate}}</h4>
+
+		<table class="table table-condensed">
+			<tr>
+				<th>Id</th>
+				<th ng-click="sort('userName')"><span translate>USER_USERNAME</span>
+					<span class="glyphicon sort-icon" ng-show="sortKey=='userName'"
+						ng-class="{'glyphicon-chevron-up':reverse,'glyphicon-chevron-down':!reverse}"></span>
+				</th>
+				<!-- <th ng-click="sort('email')"><span translate>USER_EMAIL</span>
+					<span class="glyphicon sort-icon" ng-show="sortKey=='email'"
+						ng-class="{'glyphicon-chevron-up':reverse,'glyphicon-chevron-down':!reverse}"></span>
+				</th> -->
+				<th ng-click="sort('tpLinkUserName')"><span translate>USER_TPLINK_USERNAME</span>
+					<span class="glyphicon sort-icon" ng-show="sortKey=='tpLinkUserName'"
+						ng-class="{'glyphicon-chevron-up':reverse,'glyphicon-chevron-down':!reverse}"></span>
+				</th>
+				<th ng-click="sort('enabled')"><span translate>USER_IS_ENABLED</span>
+					<span class="glyphicon sort-icon" ng-show="sortKey=='enabled'"
+						ng-class="{'glyphicon-chevron-up':reverse,'glyphicon-chevron-down':!reverse}"></span>
+				</th>
+				<th><span translate>USER_ACTION</span></th>
+			</tr>
+			<tr class="panel panel-default"
+				dir-paginate="user in prosumers | orderBy:sortKey:reverse | filter:search | itemsPerPage:pageSize">
+				<!-- <td>{{$index + 1}}</td> -->
+				<td>{{user.id}}</td>
+				<td>{{user.userName}}</td>
+				<!-- <td>{{user.email}}</td> -->
+				<td>{{user.tpLinkUserName}}</td>
+				<td>{{user.enabled}}</td>
+				<td>
+					<!-- <a href="#!/user/edit/{{user.userName}}" title="Edit"><i class="icon ion-edit"></i></a> &nbsp;&nbsp;&nbsp; -->
+					<a style="padding-right: 20px;" href="#!/profile/{{user.userName}}" title="{{'USER_EDIT_USER' | translate}}"><i
+							class="icon ion-edit"></i></a>
+					<a style="padding-right: 20px;" href="#!/contract/{{user.userName}}" title="{{'USER_SEE_CONTRACT' | translate}}"><i
+							class="icon ion-clipboard"></i></a>
+					<a style="padding-right: 20px;" href="#!/bill/{{user.userName}}" title="{{'USER_SEE_BILL' | translate}}"><i
+							class="icon ion-cash"></i></a>
+					<a href="javascript:void(0);" title="{{'USER_DELETE' | translate}}" ng-click="removeUser(user);">
+						<i class="icon ion-trash-a"></i>
+					</a>
+				</td>
+			</tr>
+
+		</table>
+	</div>
+	<dir-pagination-controls max-size="5" direction-links="true" boundary-links="true">
+	</dir-pagination-controls>
+
+	<div class="col-md-2 pull-right">
+		<label translate>USER_PER_PAGE</label>
+		<input class="form-control" type="number" min="1" max="100" ng-model="pageSize">
+	</div>
+
+	<div class="col-md-3 pull-right">
+		<label translate>USER_SEARCH</label>
+		<input class="form-control" type="text" ng-model="search" placeholder="{{'USER_PLACEHOLDER' | translate}}">
+	</div>
+
+	<div class="clearfix"></div>
+</div>

@@ -18,7 +18,7 @@ import java.util.Random;
 @Service
 public class TCLForecastService implements ForecastService {
 
-    private DemandPredictionService demandPredictionService;
+    private final DemandPredictionService demandPredictionService;
 
     @Autowired
     public TCLForecastService(

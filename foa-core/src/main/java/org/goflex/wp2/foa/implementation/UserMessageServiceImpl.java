@@ -68,7 +68,7 @@ public class UserMessageServiceImpl implements UserMessageService {
         cal.setTime(date);
         cal.add(Calendar.DATE, -1);
         Date yesterday = cal.getTime();
-        return this.userMessageRepository.findSimilarMessages(userName, messageCode, yesterday) > 0 ? true : false;
+        return this.userMessageRepository.findSimilarMessages(userName, messageCode, yesterday) > 0;
     }
 
     @Override

@@ -55,8 +55,8 @@ public class FOAServiceImpl implements FOAService {
     @Resource(name = "deviceLatestFO")
     private ConcurrentHashMap<String, FlexOfferT> deviceLatestFO;
 
-    private FlexOfferRepository flexofferRepository;
-    private ContactServiceImpl contractService;
+    private final FlexOfferRepository flexofferRepository;
+    private final ContactServiceImpl contractService;
 
     public FOAServiceImpl(FlexOfferRepository flexofferRepository,
                           ContactServiceImpl contractService) {

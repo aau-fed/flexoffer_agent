@@ -42,7 +42,7 @@ import java.util.List;
 public class FOAUserPrincipal implements UserDetails {
 
     private final List<GrantedAuthority> authorities;
-    private UserT user;
+    private final UserT user;
 
 
     public FOAUserPrincipal(UserT user) {

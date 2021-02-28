@@ -39,7 +39,7 @@ public enum Assignment {
     obligatory(0),
     optional(1);
 
-    private int value;
+    private final int value;
 
     Assignment(int value) {
         this.value = value;

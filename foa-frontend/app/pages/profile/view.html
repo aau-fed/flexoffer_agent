@@ -1,0 +1,111 @@
+<div class="col-md-9 sn-form sn-form-profile">
+    <h2 class="title text-center" style="margin-bottom: 25px;">{{'PROFILE_TITLE' | translate}}</h2>
+
+    <div ng-class="messageType" role="alert" ng-if="messageText">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <span ng-bind="messageText"></span>
+    </div>
+
+    <div class="row">
+
+        <form>
+            <div class="col-xs-7">
+                <div class="form-group">
+                    <strong>{{'USER_USERNAME' | translate}}: </strong> {{username}}
+                </div>
+                <div class="form-group">
+                    <label>{{'USER_PASSWORD' | translate}}</label>
+                    <input class="form-control" placeholder="{{'PROFILE_PASSWORD' | translate}}"
+                        type="password" ng-model="password">
+                </div>
+
+                <div class="form-group" ng-show="role=='ROLE_ADMIN' && admins.indexOf(username) == -1 && sysAdmins.indexOf(username) == -1">
+                    <label>{{'USER_ROLE' | translate}}</label>
+                    <select ng-model="userRole">
+                        <option value="ROLE_PROSUMER" selected>ROLE_PROSUMER</option>
+                        <option value="ROLE_ADMIN">ROLE_ADMIN</option>
+                    </select>
+                </div>
+
+                <div class="form-group" ng-show="userRole=='ROLE_ADMIN'">
+                    <label>{{'USER_EMAIL' | translate}}</label>
+                    <input type="text" class="form-control" placeholder="{{'USER_EMAIL' | translate}}"
+                        ng-model="email">
+                        <!-- ng-model="email" ng-required="userRole=='ROLE_ADMIN'"> -->
+                </div>
+
+                <div class="form-group" ng-show="userRole!='ROLE_ADMIN'">
+                    <label>{{'USER_TPLINK_USERNAME' | translate}}</label>
+                    <input type="text" class="form-control" placeholder="{{'USER_TPLINK_USERNAME' | translate}}"
+                        ng-model="tpLinkUserName">
+                </div>
+                <div class="form-group" ng-show="userRole!='ROLE_ADMIN'">
+                    <label>{{'USER_TPLINK_PASSWORD' | translate}}</label>
+                    <input type="password" class="form-control" placeholder="{{'PROFILE_TPLINK_PASSWORD' | translate}}"
+                        ng-model="tpLinkPassword" ng-required="tpLinkUserName">
+                </div>
+
+                <div class="form-group">
+                    <label>{{'USER_PHONE' | translate}}</label>
+                    <input class="form-control" type="text" id="phone" name="phone" placeholder="{{'USER_PHONE' | translate}}"
+                        ng-model="phone">
+                </div>
+
+                <div class="form-group">
+                    <label>{{'USER_PHONE' | translate}} 2</label>
+                    <input class="form-control" type="text" id="phone2" name="phone2" placeholder="{{'USER_PHONE' | translate}} 2"
+                        ng-model="phone2">
+                </div>
+
+
+                <div class="form-group" ng-show="role == 'ROLE_ADMIN' && admins.indexOf(username) == -1">
+                    <label>
+                        {{'USER_IS_ENABLED' | translate}}
+                        <input ng-model="enabled" type="checkbox" >
+                    </label>
+                </div>
+
+            </div>
+
+            <div class="col-xs-5 text-center">
+                <form class="form-horizontal col-sm-8">
+                    <div>
+                        <img src="{{pic}}" alt="{{pic}}" style="max-width:190px" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" for="uploadedFile"><span translate>PROFILE_UPDATE_PIC</span> (max:
+                            {{maxPicSize/1000}}KB):</label>
+                        <input class="form-control" type="file" accept=".png,.jpg" file-model="uploadedFile"></input>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-block btn-default" ng-click="uploadPic()" translate>PROFILE_UPLOAD_PIC</button>
+                    </div>
+                </form>
+            </div>
+
+
+            <div class="col-md-12">
+                <div class="form-group" title="{{'TOOLTIP_USER_LOCATION' | translate}}">
+                    <label for="address"><span translate>PROFILE_ADDRESS</label>
+                    <input ng-model="vm.address.formattedAddress" ng-autocomplete details="vm.address" id="user-address"
+                        name="address" type="text" ng-change="addressChanged()" />
+                </div>
+
+                <div id="user-map"></div>
+            </div>
+
+            <div class="col-md-12 center-contents">
+                <div class="col-md-12" style="margin-top: 20px;">
+                    <button class=" btn btn-block btn-hero-success" ng-click="updateUser()" type="submit" translate>
+                        PROFILE_UPDATE
+                    </button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+
+    <div class="links"></div>
+    <div class="clearfix"></div>
+</div>

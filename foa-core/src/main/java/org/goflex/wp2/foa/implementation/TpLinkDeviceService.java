@@ -34,13 +34,16 @@ import org.goflex.wp2.core.models.*;
 import org.goflex.wp2.core.repository.OrganizationRepository;
 import org.goflex.wp2.foa.config.FOAProperties;
 import org.goflex.wp2.foa.controldetailmonitoring.ControlDetailService;
+import org.goflex.wp2.foa.events.UpdateDevicesEvent;
 import org.goflex.wp2.foa.interfaces.DeviceDetailService;
 import org.goflex.wp2.foa.interfaces.UserMessageService;
 import org.goflex.wp2.foa.interfaces.UserService;
 import org.goflex.wp2.foa.interfaces.xEmsServices;
+import org.goflex.wp2.foa.wrapper.DeviceDetailDataWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -68,7 +71,7 @@ public class TpLinkDeviceService implements xEmsServices {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TpLinkDeviceService.class);
     private static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:00'Z'";
-    private static Map<String, Double> lastConsumption = new HashMap<>();
+    private static final Map<String, Double> lastConsumption = new HashMap<>();
     @Resource(name = "deviceLatestFO")
     ConcurrentHashMap<String, FlexOfferT> deviceLatestFO;
 
@@ -89,29 +92,22 @@ public class TpLinkDeviceService implements xEmsServices {
 
     private List<ConsumptionTimeSeries> consumptionTimeSeries = new ArrayList<>();
 
-    private Map<String, Double> wetDeviceCustomThresholds = new HashMap<>();
+    private final Map<String, Double> wetDeviceCustomThresholds = new HashMap<>();
 
-    @Autowired
     private FOAProperties foaProperties;
-    @Autowired
     private UserService userService;
-    @Autowired
     private DeviceDetailService deviceDetailService;
-    @Autowired
     private UserMessageService userMessageService;
-    @Autowired
     private OrganizationRepository organizationRepository;
-    @Autowired
     private DeviceFlexOfferGroup deviceFlexOfferGroup;
-    @Autowired
     private RestTemplate restTemplate;
-    @Autowired
     private ControlDetailService controlDetailService;
+    private ApplicationEventPublisher applicationEventPublisher;
 
     private String APIKey = "";
     private boolean tokenInvalid = false;
 
-    private ArrayList<String> V1_para = new ArrayList<String>() {{
+    private final ArrayList<String> V1_para = new ArrayList<String>() {{
         add("relay_state");
         add("latitude");
         add("longitude");
@@ -120,7 +116,7 @@ public class TpLinkDeviceService implements xEmsServices {
         add("power");
         add("total");
     }};
-    private ArrayList<String> V2_para = new ArrayList<String>() {{
+    private final ArrayList<String> V2_para = new ArrayList<String>() {{
         add("relay_state");
         add("latitude_i");
         add("longitude_i");
@@ -135,7 +131,6 @@ public class TpLinkDeviceService implements xEmsServices {
         this.wetDeviceCustomThresholds.put("bijay@80060B5E0FD671D58243CE7162A6054719822955", 10.0);
     }
 
-    /*
     @Autowired
     public TpLinkDeviceService(FOAProperties foaProperties,
                                UserService userService,
@@ -143,7 +138,10 @@ public class TpLinkDeviceService implements xEmsServices {
                                UserMessageService userMessageService,
                                OrganizationRepository organizationRepository,
                                DeviceFlexOfferGroup deviceFlexOfferGroup,
-                               RestTemplate restTemplate) {
+                               RestTemplate restTemplate,
+                               ApplicationEventPublisher applicationEventPublisher,
+                               ControlDetailService controlDetailService
+                               ) {
 
         this.foaProperties = foaProperties;
         this.userService = userService;
@@ -152,9 +150,9 @@ public class TpLinkDeviceService implements xEmsServices {
         this.organizationRepository = organizationRepository;
         this.deviceFlexOfferGroup = deviceFlexOfferGroup;
         this.restTemplate = restTemplate;
+        this.controlDetailService = controlDetailService;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
-
-     */
 
 
     /**
@@ -181,8 +179,8 @@ public class TpLinkDeviceService implements xEmsServices {
                     restTemplate.exchange(newURl, HttpMethod.POST, entity, String.class); //Make POST call
             return response;
         } catch (Exception ex) {
-            LOGGER.warn("requestTpLinkCloud(): Error making request");
             LOGGER.warn(ex.getLocalizedMessage(), ex);
+            LOGGER.info("user: {}, requestBody: {}", deviceParameters.getCloudUserName(), requestBody);
             return null;
         }
     }
@@ -205,19 +203,29 @@ public class TpLinkDeviceService implements xEmsServices {
         if (device == null) {
             return;
         }
-        if (device.getPlugType() == PlugType.SwissCase) {
+        if (device.getPlugType() == PlugType.MQTT) {
             return;
         }
 
-        if (userMessageService.similarMessageExists(deviceId, userName, errorCode)) {
-            return;
-        }
         UserMessage message = new UserMessage();
         if (responseJsn != null) {
             message.setMessage(responseJsn.get("msg").textValue());
         } else {
             message.setMessage("Please verify your Tp-Link username and password is correct");
 
+        }
+
+        if(message.getMessage().contains("Request timeout")
+                || message.getMessage().contains("Parameter doesn't exist")
+                || message.getMessage().contains("Token expired")
+                || message.getMessage().contains("Device is offline")){
+            //LOGGER.info("Message Discarded: " + message.getMessage() + "\n");
+            return;
+
+        }
+
+        if (userMessageService.similarMessageExists(deviceId, userName, errorCode)) {
+            return;
         }
 
         //UserT user = userService.getUserByLoadId(userName);
@@ -373,6 +381,7 @@ public class TpLinkDeviceService implements xEmsServices {
                     "            \"requestData\": \"{\\\"system\\\":{\\\"get_sysinfo\\\":" +
                     "null}, \\\"emeter\\\":{\\\"get_realtime\\\":null}}\" }}"; //Wrap data and header
 
+
             ResponseEntity<String> response = this.requestTpLinkCloud(requestBody, deviceParameters);
             ObjectMapper mapper = new ObjectMapper();
             JsonNode responseJsn = null;
@@ -381,7 +390,7 @@ public class TpLinkDeviceService implements xEmsServices {
                 responseJsn = mapper.readTree(response.getBody());
                 LOGGER.trace(responseJsn.toString());
             } catch (IOException e) {
-                LOGGER.warn("Error during API call to TPlink cloud server.");
+                LOGGER.warn("Error during API call to TP-link cloud server.");
                 LOGGER.error(e.getLocalizedMessage(), e);
                 return deviceDetailData;
             }
@@ -415,25 +424,25 @@ public class TpLinkDeviceService implements xEmsServices {
                             dt = this.extractData_V1(responseJsn1);
                         } else if (responseJsn1.get("system").get("get_sysinfo").get("hw_ver").asDouble() == 2.0) {
                             dt = this.extractData_V2(responseJsn1);
+                        }else{
+                            dt = this.extractData_V2(responseJsn1);
                         }
                     }
 
-                    if (dt.get("power") > 4000) {
-                        return null;
-                    }
+                    double power = dt.get("power") > 4000 ? -1 : dt.get("power");
 
                     // prepare DeviceData object
                     DeviceData deviceData = new DeviceData();
                     deviceData.setCurrent(dt.get("current"));
                     deviceData.setVoltage(dt.get("voltage"));
-                    deviceData.setPower(dt.get("power"));
+                    deviceData.setPower(power);
                     deviceData.setEnergy(dt.get("energy"));
                     deviceData.setDate(currentDate);
 
                     // finally prepare the object to be returned
                     deviceDetailData.setTime(currentDate);
                     deviceDetailData.setState(deviceStatus == 0 ? DeviceState.Idle : DeviceState.Operating);
-                    deviceDetailData.setValue(dt.get("power"));
+                    deviceDetailData.setValue(power);
                     deviceDetailData.setDeviceData(deviceData);
 
                     String alias = responseJsn1.get("system").get("get_sysinfo").get("alias").asText();
@@ -454,21 +463,21 @@ public class TpLinkDeviceService implements xEmsServices {
             } else if (responseJsn.has("error_code")) {
                 if (responseJsn.get("error_code").intValue() == -20651) {
                     deviceDetailData.setErrorCode(-20651);
-                    LOGGER.info("Error -20651 received");
+                    LOGGER.debug("device: {}. Error -20651 received", deviceID);
                 } else if (responseJsn.get("msg").textValue().equals("Token expired")) {
                     deviceDetailData.setErrorCode(-20651);
-                    LOGGER.info("Token Expired");
+                    LOGGER.debug("device: {}. Token Expired", deviceID);
                 } else if (responseJsn.get("error_code").intValue() == -20104) {
                     deviceDetailData.setErrorCode(-20651);
-                    LOGGER.info("Error -20104 received");
+                    LOGGER.debug("device: {}. Error -20104 received", deviceID);
                 } else if (responseJsn.get("error_code").intValue() == -20571 ||
                         responseJsn.get("msg").textValue().equals("Device is offline")) {
-                    LOGGER.info("Device is offline");
+                    LOGGER.debug("device: {} is offline", deviceID);
                     deviceDetailData.setState(DeviceState.Disconnected);
                     deviceDetailData.setErrorCode(-20571);
                 } else {
-                    LOGGER.info(responseJsn.toString());
-                    LOGGER.info("Unknown error received");
+                    LOGGER.debug(responseJsn.toString());
+                    LOGGER.debug("device: {}. Unknown error received", deviceID);
                     deviceDetailData.setErrorCode(-20651);
                 }
 
@@ -514,6 +523,7 @@ public class TpLinkDeviceService implements xEmsServices {
                     responseJsn1 = mapper.readTree(responseJsn.get("result").get("responseData").textValue());
                 } catch (IOException e) {
                     LOGGER.error(e.getLocalizedMessage(), e);
+                    LOGGER.info("user: {}, device: {}", userName, deviceID);
                 }
                 Double energyConsum = responseJsn1.get("emeter").get("get_realtime").get("power").asDouble();
                 return energyConsum;
@@ -522,7 +532,7 @@ public class TpLinkDeviceService implements xEmsServices {
             this.HandleTpLinkConnectionError(responseJsn, MessageCode.UnknownError,
                     userName, deviceID);
         } else {
-            LOGGER.warn("Error in receiving device consumption");
+            LOGGER.warn("Error in receiving device consumption for device: {}", deviceID);
         }
 
         return 0.0;
@@ -545,7 +555,7 @@ public class TpLinkDeviceService implements xEmsServices {
         try {
             responseJsn = mapper.readTree(response.getBody());
         } catch (IOException e) {
-            LOGGER.warn("Error during API call to TPlink cloud server.");
+            LOGGER.warn("Error during API call to TPlink cloud server for device: {}.", deviceID);
             LOGGER.error(e.getLocalizedMessage(), e);
         }
         return responseJsn;
@@ -592,6 +602,7 @@ public class TpLinkDeviceService implements xEmsServices {
                     responseJsn1 = mapper.readTree(responseJsn.get("result").get("responseData").textValue());
                 } catch (IOException e) {
                     LOGGER.error(e.getLocalizedMessage(), e);
+                    LOGGER.info("user: {}, device: {}", userName, deviceID);
                 }
                 LOGGER.trace(responseJsn1.get("system").get("get_sysinfo").get("relay_state").toString());
                 return Integer.parseInt(responseJsn1.get("system").get("get_sysinfo").get("relay_state").toString());
@@ -642,9 +653,7 @@ public class TpLinkDeviceService implements xEmsServices {
                 if (responseJsn.get("error_code").intValue() != 0) {
                     this.devicePendingControlSignals.put(deviceId, 1);
                 } else {
-                    if (this.devicePendingControlSignals.containsKey(deviceId)) {
-                        this.devicePendingControlSignals.remove(deviceId);
-                    }
+                    this.devicePendingControlSignals.remove(deviceId);
                 }
             }
         } catch (IOException e) {
@@ -690,9 +699,7 @@ public class TpLinkDeviceService implements xEmsServices {
                 if (responseJsn.get("error_code").intValue() != 0) {
                     this.devicePendingControlSignals.put(deviceId, 0);
                 } else {
-                    if (this.devicePendingControlSignals.containsKey(deviceId)) {
-                        this.devicePendingControlSignals.remove(deviceId);
-                    }
+                    this.devicePendingControlSignals.remove(deviceId);
                 }
             }
         } catch (IOException e) {
@@ -776,6 +783,7 @@ public class TpLinkDeviceService implements xEmsServices {
                         responseJsn1 = mapper.readTree(responseJsn.get("result").get("responseData").textValue());
                     } catch (IOException e) {
                         LOGGER.error(e.getLocalizedMessage(), e);
+                        LOGGER.info("user: {}, device: {}", userName, deviceID);
                     }
                     return responseJsn1.get("schedule").get("add_rule").get("id").textValue();
                 }
@@ -932,6 +940,26 @@ public class TpLinkDeviceService implements xEmsServices {
                     ResponseEntity<String> response = this.makeHttpRequest(url, HttpMethod.POST, null, null);
 
                     if (response.getStatusCode().value() == 200) {
+                        LOGGER.error("Turning off device: {} at power value {}", device.getDeviceId(), currentConsumption);
+
+                        try {
+                            // store the data point at which device turned off. store it for the next minute
+                            consumptionData.setTime(new Date(consumptionData.getTime().getTime() + 60000));
+                            List<DeviceDetailDataWrapper> deviceDetailDataList = new ArrayList<>();
+                            DeviceDetailDataWrapper deviceDetailDataWrapper = new DeviceDetailDataWrapper();
+                            deviceDetailDataWrapper.setUserName(user.getUserName());
+                            deviceDetailDataWrapper.setDeviceDetailId(device.getDeviceDetailId());
+                            deviceDetailDataWrapper.setDeviceDetailData(consumptionData);
+                            deviceDetailDataList.add(deviceDetailDataWrapper);
+                            // store the data point at which device turned off. store it for the next minute
+                            UpdateDevicesEvent updateDevicesEvent = new UpdateDevicesEvent( this,
+                                    String.format("Storing wet device turn off power value for device: {}", device.getDeviceId()),
+                                    deviceDetailDataList);
+                            this.applicationEventPublisher.publishEvent(updateDevicesEvent);
+                        } catch (Exception ex) {
+                            LOGGER.error(ex.getMessage());
+                        }
+
                         // make api call to generate flex offer
                         url = foaProperties.getFogConnectionConfig().getGenerateDeviceFOUrl() + "/" +
                                 device.getDeviceId() + "/" + organizationName;
@@ -950,6 +978,7 @@ public class TpLinkDeviceService implements xEmsServices {
             }
         } catch (Exception e) {
             LOGGER.error(e.getLocalizedMessage(), e);
+            LOGGER.info("user: {}, device: {}", user.getUserName(), device.getDeviceId());
         }
     }
 
@@ -983,42 +1012,30 @@ public class TpLinkDeviceService implements xEmsServices {
                     if (consumptionData.getTime() != null) {
                         Double currentConsumption = consumptionData.getValue();// * 20 / 1000;
                         Map<Date, Double> val = new HashMap<>();
-                        if (deviceLatestAggData.containsKey(organizationName)) {
-                            if (deviceLatestAggData.get(organizationName).containsKey(consumptionData.getTime())) {
-                                Double aggConsumption = deviceLatestAggData.get(organizationName).
-                                        get(consumptionData.getTime()) + currentConsumption;
+                        if (currentConsumption >= 0) {
+                            if (deviceLatestAggData.containsKey(organizationName)) {
+                                if (deviceLatestAggData.get(organizationName).containsKey(consumptionData.getTime())) {
+                                    Double aggConsumption = deviceLatestAggData.get(organizationName).
+                                            get(consumptionData.getTime()) + currentConsumption;
 
-                                //val.put(consumptionData.getTime(), aggConsumption);
-                                deviceLatestAggData.get(organizationName)
-                                        .put(consumptionData.getTime(), aggConsumption);
+                                    //val.put(consumptionData.getTime(), aggConsumption);
+                                    deviceLatestAggData.get(organizationName)
+                                            .put(consumptionData.getTime(), aggConsumption);
+                                } else {
+                                    //val.put(consumptionData.getTime(), currentConsumption);
+                                    deviceLatestAggData.get(organizationName)
+                                            .put(consumptionData.getTime(), currentConsumption);
+
+                                }
+                                //deviceLatestAggData.put(organizationName, val);
                             } else {
-                                //val.put(consumptionData.getTime(), currentConsumption);
-                                deviceLatestAggData.get(organizationName)
-                                        .put(consumptionData.getTime(), currentConsumption);
-
+                                val.put(consumptionData.getTime(), currentConsumption);
+                                deviceLatestAggData.put(organizationName, val);
                             }
-                            //deviceLatestAggData.put(organizationName, val);
-                        } else {
-                            val.put(consumptionData.getTime(), currentConsumption);
-                            deviceLatestAggData.put(organizationName, val);
                         }
 
                         // store accumulated energy consumption
                         Double devicePower = 0.0;
-                        /*
-                        // report operationPower to FMAN from FO creation till 15 min after endBeforeTime
-                        // this was agreed with with INEA for SWW SAT
-                        if (organizationName.equals("SWW") && deviceLatestFO.containsKey(device.getDeviceId())) {
-                            FlexOfferT fo = deviceLatestFO.get(device.getDeviceId());
-                            Date currentTime = new Date();
-                            Date endTime = new Date(fo.getFlexoffer().getEndBeforeTime().getTime() + 900000);
-                            if (endTime.after(currentTime)) {
-                                devicePower = consumptionData.getValue();
-                            }
-                        } else {
-                            devicePower = consumptionData.getValue();
-                        }
-                         */
                         devicePower = consumptionData.getValue();
 
                         if (orgAccEnergyData.containsKey(organizationName)) {
@@ -1252,7 +1269,7 @@ public class TpLinkDeviceService implements xEmsServices {
         } catch (Exception e) {
             LOGGER.warn("Error getting timezone for device: {} from TP-Link cloud server. Using default timezone: {}",
                     deviceId, time_zone);
-            LOGGER.error(e.getLocalizedMessage(), e);
+            //LOGGER.error(e.getLocalizedMessage(), e);
             return time_zone;
         }
     }
@@ -1291,8 +1308,10 @@ public class TpLinkDeviceService implements xEmsServices {
                     //LOGGER.debug(responseJsn.get("result").get("deviceList").get(i).get("deviceId").textValue());
                     String alias = responseJsn.get("result").get("deviceList").get(i).get("alias").textValue();
                     String deviceId = responseJsn.get("result").get("deviceList").get(i).get("deviceId").textValue();
-
-                    tempDeviceList.put(deviceId, alias);
+                    String deviceType = responseJsn.get("result").get("deviceList").get(i).get("deviceModel").textValue();
+                    if(deviceType.equals("HS110(EU)")) {
+                        tempDeviceList.put(deviceId, alias);
+                    }
                 }
             }
         } else if (responseJsn.has("error_code")) {

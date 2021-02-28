@@ -45,7 +45,7 @@ public class SystemConfigController {
             return errorResponse("Invalid User", HttpStatus.UNAUTHORIZED);
         }
         try {
-            if (org.toLowerCase().equals("all")) {
+            if (org.equalsIgnoreCase("all")) {
                 organizationRepository.findAll().forEach(organization -> {
                     organization.setDirectControlMode(OrganizationLoadControlState.valueOf(toState));
                     organizationRepository.save(organization);

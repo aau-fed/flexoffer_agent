@@ -62,23 +62,23 @@ public class ScheduleExecutor {
     private static final Logger logger = LoggerFactory.getLogger(ScheduleExecutor.class);
 
 
-    private ScheduleServiceImpl scheduleService;
+    private final ScheduleServiceImpl scheduleService;
 
-    private UserService userService;
+    private final UserService userService;
 
-    private DeviceDetailService deviceDetailService;
+    private final DeviceDetailService deviceDetailService;
 
-    private ImplementationsHandler implementationsHandler;
+    private final ImplementationsHandler implementationsHandler;
 
-    private OrganizationRepository organizationRepository;
+    private final OrganizationRepository organizationRepository;
 
-    private ControlDetailService controlDetailService;
+    private final ControlDetailService controlDetailService;
 
-    private ApplicationEventPublisher applicationEventPublisher;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
-    private AppRuntimeConfig appRuntimeConfig;
+    private final AppRuntimeConfig appRuntimeConfig;
 
-    private FOAService foaService;
+    private final FOAService foaService;
 
     public ScheduleExecutor(ScheduleServiceImpl scheduleService,
                             UserService userService,
@@ -104,6 +104,10 @@ public class ScheduleExecutor {
     public void processSchedule(OnOffSchedule schedule) {
         logger.info("Executing schedule for {}", schedule.getDeviceID());
         DeviceDetail device = deviceDetailService.getDevice(schedule.getDeviceID());
+
+        if (device == null) {
+            return;
+        }
 
         // added to avoid sending control signals to production loads
         if (device.getDeviceType() == DeviceType.PV || device.getDeviceType() == DeviceType.Wind) {

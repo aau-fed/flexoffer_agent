@@ -92,7 +92,7 @@ public class FlexOfferScheduleUpdateReceivedListner {
 
     //@Override
     public void onApplicationEvent(FlexOfferScheduleReceivedEvent event) {
-        logger.debug(event.getEvent() + " at " + event.getTimestamp() + " for flex-offer with ID =>{}", event.getFlexOffer().getId());
+        logger.debug(event.getEventName() + " at " + event.getTimestamp() + " for flex-offer with ID =>{}", event.getFlexOffer().getId());
         //update schedule update id by 1
         event.getNewSchedule().setUpdateId(event.getFlexOffer().getFlexOfferSchedule().getUpdateId() + 1);
         //update flex-offer schedule

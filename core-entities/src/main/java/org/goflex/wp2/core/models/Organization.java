@@ -51,6 +51,10 @@ public class Organization implements Serializable {
     @Column(name = "organization_Id")
     private long organizationId;
 
+    private boolean poolBasedControl = false;
+
+    private double poolDeviceCoolingPeriod = 180;
+
     private OrganizationLoadControlState directControlMode = OrganizationLoadControlState.Paused;
 
     public long getId() {
@@ -84,5 +88,44 @@ public class Organization implements Serializable {
 
     public void setDirectControlMode(OrganizationLoadControlState directControlMode) {
         this.directControlMode = directControlMode;
+    }
+
+    public boolean isPoolBasedControl() {
+        return poolBasedControl;
+    }
+
+    public void setPoolBasedControl(boolean poolBasedControl) {
+        this.poolBasedControl = poolBasedControl;
+    }
+
+    public Organization() {
+    }
+
+    public Organization(String organizationName, long organizationId, boolean poolBasedControl,
+                        OrganizationLoadControlState directControlMode, double poolDeviceCoolingPeriod) {
+        this.organizationName = organizationName;
+        this.organizationId = organizationId;
+        this.poolBasedControl = poolBasedControl;
+        this.directControlMode = directControlMode;
+        this.poolDeviceCoolingPeriod = poolDeviceCoolingPeriod;
+    }
+
+    @Override
+    public String toString() {
+        return "Organization{" +
+                "id=" + id +
+                ", organizationName='" + organizationName + '\'' +
+                ", organizationId=" + organizationId +
+                ", poolBasedControl=" + poolBasedControl +
+                ", directControlMode=" + directControlMode +
+                '}';
+    }
+
+    public double getPoolDeviceCoolingPeriod() {
+        return poolDeviceCoolingPeriod;
+    }
+
+    public void setPoolDeviceCoolingPeriod(double poolDeviceCoolingPeriod) {
+        this.poolDeviceCoolingPeriod = poolDeviceCoolingPeriod;
     }
 }

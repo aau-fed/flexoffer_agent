@@ -1,0 +1,77 @@
+<div class="col-md-12 bg-white">
+    <div class="donut-chart device-chart-page">
+        <div class="chart-header">
+            <div class="input-group">
+                <div class="input-group-addon">
+                    <i class="glyphicon glyphicon-calendar">
+                    </i>
+                </div>
+                <input class="form-control power-date" id="control-date-picker" name="date" placeholder="MM/DD/YYYY"
+                    type="text" />
+            </div>
+
+            <div class="clearfix"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3 table-responsive printContent" style="font-size: small; margin-left: 10;">
+                <h3>Device State History</h3>
+                <table class="table table-hover" style="background-color: rgb(248, 248, 240);">
+                    <thead style="font-weight: bold">
+                        <tr>
+                            <td>
+                                {{'DEVICEDETAIL_STATE' | translate}}
+                            </td>
+                            <td>
+                                {{'DEVICEDETAIL_CONTROL_DATETIME' | translate}}
+                            </td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="stateHistory in deviceStateHistory">
+                            <td>{{stateHistory.deviceState}}</td>
+                            <td>{{stateHistory.timestamp | date: "short"}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="col-md-9 table-responsive printContent" style="font-size: small; margin-left: 10;">
+                <h3>Device Control History</h3>
+                <table class="table table-hover" style="background-color: rgb(248, 248, 240);">
+                    <thead style="font-weight: bold">
+                        <tr>
+                            <td>
+                                {{'DEVICEDETAIL_FO_ID' | translate}}
+                            </td>
+                            <td>
+                                {{'DEVICEDETAIL_SCHEDULE_ID' | translate}}
+                            </td>
+                            <td>
+                                {{'DEVICEDETAIL_CONTROL_TYPE' | translate}}
+                            </td>
+                            <td>
+                                {{'DEVICEDETAIL_CONTROL_DATETIME' | translate}}
+                            </td>
+                            <td>
+                                {{'DEVICEDETAIL_TRIGGERED_TO_DEVICE' | translate}}
+                            </td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="control in deviceControlData">
+                            <td>{{control.flexofferId}}</td>
+                            <td>{{control.scheduleId}}</td>
+                            <td>{{control.controlType == -1 ? 'DEVICEDETAIL_CONTROL_NO_ACTION' : control.controlType ? 'DEVICEDETAIL_CONTROL_ON' : 'DEVICEDETAIL_CONTROL_OFF' | translate}}
+                            </td>
+                            <td>{{control.controlDatetime | date: "short"}}</td>
+                            <td>{{control.triggeredToDevice ? 'VALUE_TRUE' : 'VALUE_FALSE' | translate}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+
+    </div>
+</div>

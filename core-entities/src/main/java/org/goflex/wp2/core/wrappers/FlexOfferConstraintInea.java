@@ -165,10 +165,8 @@ public class FlexOfferConstraintInea implements Serializable {
         if (Double.doubleToLongBits(lowerBound) != Double
                 .doubleToLongBits(other.lowerBound))
             return false;
-        if (Double.doubleToLongBits(upperBound) != Double
-                .doubleToLongBits(other.upperBound))
-            return false;
-        return true;
+        return Double.doubleToLongBits(upperBound) == Double
+                .doubleToLongBits(other.upperBound);
     }
 
 }

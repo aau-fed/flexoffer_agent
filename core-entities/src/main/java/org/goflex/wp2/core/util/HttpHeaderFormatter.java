@@ -31,6 +31,7 @@ import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.http.HttpHeaders;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Created by bijay on 4/9/18.
@@ -42,7 +43,7 @@ public class HttpHeaderFormatter {
         return new HttpHeaders() {{
             String auth = username + ":" + password;
             byte[] encodedAuth = Base64.encodeBase64(
-                    auth.getBytes(Charset.forName("US-ASCII")));
+                    auth.getBytes(StandardCharsets.US_ASCII));
             String authHeader = "Basic " + new String(encodedAuth);
             set("Authorization", authHeader);
         }};

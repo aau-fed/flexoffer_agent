@@ -1,0 +1,147 @@
+<div class="col-md-9 sn-form sn-form-profile">
+    <div class="bill-header">
+        <h4 class="title">{{'CONFIG_ORG_DEVICE_CONTROL' | translate}}</h4>
+        <div class="col-md-12">
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>{{'CONFIG_DEVICE_CONTROL' | translate}}: </strong>
+                    <span translate="{{orgStatus}}"></span>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-block btn-hero-success" type="submit" ng-click="setOrgControl(1)"
+                        ng-disabled="allAdmins.indexOf(userName) == -1">
+                        {{'CONFIG_ENABLE_ORG_CONTROL' | translate}}
+                    </button>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-block btn-hero-danger" type="submit" ng-click="setOrgControl(0)"
+                        ng-disabled="allAdmins.indexOf(userName) == -1">
+                        {{'CONFIG_DISABLE_ORG_CONTROL' | translate}}
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+
+    <div class="bill-header">
+        <div class="col-md-12">
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>{{'CONFIG_POOL_CONTROL' | translate}}: </strong>
+                    <span translate="{{orgPoolControl}}"></span>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-block btn-hero-success" type="submit" ng-click="setOrgPoolControl(1)"
+                        ng-disabled="allAdmins.indexOf(userName) == -1">
+                        {{'CONFIG_ENABLE_POOL_CONTROL' | translate}}
+                    </button>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-block btn-hero-danger" type="submit" ng-click="setOrgPoolControl(0)"
+                        ng-disabled="allAdmins.indexOf(userName) == -1">
+                        {{'CONFIG_DISABLE_POOL_CONTROL' | translate}}
+                    </button>
+                </div>
+
+            </div>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+
+    <div class="bill-header">
+        <div class="col-md-12">
+            <div class="row">
+                <div class="col-md-3">
+                    <label>{{'CONFIG_POOL_DEVICE_COOLING_PERIOD' | translate}}:
+                    </label>
+                </div>
+                <div class="col-md-1">
+                    <input type="number" name="input" ng-model="poolDeviceCoolingPeriod" min="60" max="300" required>
+                </div>
+
+                <div class="col-md-2">
+                    <button class="btn btn-block btn-hero-success" type="submit"
+                        ng-click="setPoolDeviceCoolingPeriod(poolDeviceCoolingPeriod)"
+                        ng-disabled="allAdmins.indexOf(userName) == -1">
+                        {{'Update' | translate}}
+                    </button>
+                </div>
+
+            </div>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+
+    <div class="clearfix"></div>
+</div>
+
+<div class="col-md-9 sn-form sn-form-profile"
+    ng-show="sysAdmins.indexOf(userName) > -1 || admins.indexOf(userName) > -1">
+    <div class="bill-header">
+        <h4 class="title">{{'CONFIG_ADD_NEW' | translate}}</h4>
+        <div class="col-md-12">
+            <div class="row">
+                <div class="col-md-1">
+                    <label class="col-md-12 control-label">
+                        <span> {{'CONFIG_DEVICE_TYPE' | translate}}: </span>
+                    </label>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-control" ng-model="deviceType">
+                        <!-- <option ng-repeat="x in simDevices" translate="{{x}}"></option> -->
+                        <option ng-repeat="(name, model) in simDeviceModels">{{name}}</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-block btn-hero-success" type="submit" ng-click="addSimulatedLoad()"
+                        ng-disabled="sysAdmins.indexOf(userName) == -1">
+                        {{'CONFIG_CREATE_LOAD' | translate}}
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+    <div class="clearfix"></div>
+</div>
+
+<div class="col-md-9 sn-form sn-form-profile" ng-show="sysAdmins.indexOf(userName) != -1">
+    <div class="bill-header">
+        <h4 class="title" translate>CONFIG_FLEX_OFFER_GENERATOR </h4>
+        <div class="col-md-12">
+            <div class="row">
+                <div class="col-md-2">
+                    <strong>{{'CONFIG_CONTROL_STATUS' | translate}}: </strong>
+                    <span translate="{{fogStatus}}"></span>
+                </div>
+
+                <div class="col-md-2">
+                    <button class="btn btn-block btn-hero-success" type="submit" ng-click="startFOG()"
+                        ng-disabled="fogStatus == 'Offline'">
+                        {{'CONFIG_START_FOG' | translate}}
+                    </button>
+                </div>
+
+                <div class="col-md-2">
+                    <button class="btn btn-block btn-hero-danger" type="submit" ng-click="stopFOG()"
+                        ng-disabled="fogStatus == 'Offline'">
+                        {{'CONFIG_STOP_FOG' | translate}}
+                    </button>
+                </div>
+
+                <div class="col-md-3">
+                    <button class="btn btn-block btn-hero-danger" type="submit" ng-click="clearFOs()"
+                        ng-disabled="fogStatus == 'Offline'"
+                        title="Delete today's FlexOffers for the entire organization from DB">
+                        Clear Today's FlexOffers
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="clearfix"></div>
+    </div>
+
+    <div class="clearfix"></div>
+</div>

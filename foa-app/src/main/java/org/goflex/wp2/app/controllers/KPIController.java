@@ -40,11 +40,11 @@ public class KPIController {
     @Autowired
     private FmanUserService fmanUserService;
 
-    private List<Integer> activeUsers = Arrays.asList(0, 0);
-    private List<Integer> activeDevices = Arrays.asList(0, 0);
-    private List<Integer> flexOfferCount = Arrays.asList(0, 0);
-    private List<Double> flexibilityRatio = Arrays.asList(0.0, 0.0);
-    private List<Double> rewards = Arrays.asList(0.0, 0.0);
+    private final List<Integer> activeUsers = Arrays.asList(0, 0);
+    private final List<Integer> activeDevices = Arrays.asList(0, 0);
+    private final List<Integer> flexOfferCount = Arrays.asList(0, 0);
+    private final List<Double> flexibilityRatio = Arrays.asList(0.0, 0.0);
+    private final List<Double> rewards = Arrays.asList(0.0, 0.0);
 
 
     private ResponseEntity<ResponseMessage> errorResponse(String msg, HttpStatus status) {

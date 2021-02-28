@@ -27,10 +27,7 @@ public class OrganizationalConsumptionService {
     }
 
     public boolean hasDuplicateRecord(long organizationId, Date timestamp) {
-        if (this.organizationalConsumptionRepository
-                .findByOrganizationIdAndTimestamp(organizationId, timestamp).size() > 0) {
-            return true;
-        }
-        return false;
+        return this.organizationalConsumptionRepository
+                .findByOrganizationIdAndTimestamp(organizationId, timestamp).size() > 0;
     }
 }

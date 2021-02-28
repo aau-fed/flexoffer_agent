@@ -1,0 +1,92 @@
+
+            <div class="col-md-9 sn-form sn-form-profile">
+                <h2 class="title" style="margin-bottom: 25px;" translate>USER_EDIT_USER</h2>
+                <form ng-submit="submit()">
+                    <div ng-class="messageType" role="alert" ng-bind="messageText"></div>
+                    <div class="form-group">
+                        <label class="sr-only" for="input-email">Username</label>
+                        <span ng-bind="username"></span> 
+                    </div>
+                    <div class="form-group">
+                        <label class="sr-only" for="input-password">Password</label>
+                        <input class="form-control" id="input-password" name="password" placeholder="{{'USER_PASSWORD' | translate}}" type="password" ng-model="password">
+                    </div>
+                    <!-- <div class="form-group">
+                        <label class="sr-only" for="input-email">Email</label>
+                        <input class="form-control" id="input-email" name="email" placeholder="{{'USER_EMAIL' | translate}}" type="text" ng-model="email">
+                    </div> -->
+                    <div class="form-group">
+                        <label class="sr-only" for="input-tplinkusername">tpLinkUserName</label>
+                        <input class="form-control" id="input-tplinkusername" name="tpLinkUserName" placeholder="{{'USER_TPLINK_USERNAME' | translate}}" type="text" ng-model="tpLinkUserName">
+                    </div>
+                    <div class="form-group">
+                        <label class="sr-only" for="input-re-tpLinkpassword">tpLinkPassword</label>
+                        <input class="form-control" id="input-re-tplinkpassword" name="tpLinkPassword" placeholder="{{'USER_TPLINK_PASSWORD' | translate}}" type="password" ng-model="tpLinkPassword">
+                    </div>
+
+                    <div class="form-group">
+                        <br><br>
+                        <label for="address"><span translate>USER_ADDRESS</span> <span style="color: red; font-size: small" translate>USER_ADDRESS_DES</span></label>
+                        <input ng-model="vm.address.formattedAddress" ng-autocomplete details="vm.address" id="address" name="address" type="text" ng-change="addressChanged()"/>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="sr-only" for="address1">Address 1</label>
+                        <input class="form-control" type="text" id="address1" name="address1" placeholder="{{'USER_ADDRESS1' | translate}}" ng-model="address1" >
+                    </div>
+
+                    <div class="form-group">
+                        <label class="sr-only" for="address2">Address 2</label>
+                        <input class="form-control" type="text" id="address2" name="address2" placeholder="{{'USER_ADDRESS2' | translate}}" ng-model="address2" >
+                    </div>
+
+                    <div class="form-group">
+                        <label class="sr-only" for="city">City</label>
+                        <input class="form-control" type="text" id="city" name="city" placeholder="{{'USER_CITY' | translate}}" ng-model="city" >
+                    </div>
+
+                    <div class="form-group">
+                        <label class="sr-only" for="postalCode">Postal Code</label>
+                        <input class="form-control" type="text" id="postalCode" name="postalCode" placeholder="{{'USER_POSTAL_CODE' | translate}}" ng-model="postalCode" >
+                    </div>
+
+                    <div class="form-group">
+                        <label class="sr-only" for="state">State</label>
+                        <input class="form-control" type="text" id="state" name="state" placeholder="{{'USER_STATE' | translate}}" ng-model="state" >
+                    </div>
+
+                    <div class="form-group">
+                        <label class="sr-only" for="country">Country</label>
+                        <input class="form-control" type="text" id="country" name="country" placeholder="{{'USER_COUNTRY' | translate}}" ng-model="country" >
+                    </div>
+
+                    <div class="form-group">
+                        <label class="sr-only" for="phone">Phone</label>
+                        <input class="form-control" type="text" id="phone" name="phone" placeholder="{{'USER_PHONE' | translate}}" ng-model="phone" >
+                    </div>
+
+                   <button class="btn btn-block btn-hero-success" type="submit" translate>
+                        USER_UPDATE
+                    </button>
+                </form>
+
+                <!--
+                <form name="formAutocomplete" novalidate>
+                    <label for="address">Address</label>
+                    <input ng-model="vm.address.formattedAddress"
+                        ng-autocomplete details="vm.address" id="address" name="address" type="text" />
+
+                    <div ng-messages for="formAutocomplete['address'].$error" class="help-block error">
+                        <div ng-message when="required">Please provide your address</div>
+                        <div ng-message when="parse">Please select one of the suggested options</div>
+                    </div>
+                    
+                    <hr />
+                    
+                    <pre>vm.address = {{vm.address | json}}</pre>
+                </form>
+                -->                   
+
+                <div class="links"></div>
+                <div class="clearfix"></div>
+            </div>

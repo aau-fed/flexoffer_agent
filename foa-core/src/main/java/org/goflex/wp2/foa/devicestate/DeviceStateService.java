@@ -21,8 +21,8 @@ public class DeviceStateService {
     //private static final int THRESHOLD = 120; // minutes
     private static final int THRESHOLD = 60; // minutes
 
-    private DeviceCurrentStateRepository deviceCurrentStateRepository;
-    private DeviceStateHistoryRepository deviceStateHistoryRepository;
+    private final DeviceCurrentStateRepository deviceCurrentStateRepository;
+    private final DeviceStateHistoryRepository deviceStateHistoryRepository;
 
     @Autowired
     public DeviceStateService(DeviceCurrentStateRepository deviceCurrentStateRepository,

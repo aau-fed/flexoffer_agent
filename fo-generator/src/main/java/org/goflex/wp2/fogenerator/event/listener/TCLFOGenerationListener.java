@@ -48,9 +48,9 @@ import java.util.Date;
 public class TCLFOGenerationListener implements ApplicationListener<TCLFOGeneration> {
     private static final Logger LOGGER = LoggerFactory.getLogger(TCLFOGenerationListener.class);
 
-    private TCLForecastService tclForecastService;
-    private FlexOfferGenerator foGenerator;
-    private ApplicationEventPublisher applicationEventPublisher;
+    private final TCLForecastService tclForecastService;
+    private final FlexOfferGenerator foGenerator;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Autowired
     public TCLFOGenerationListener(TCLForecastService tclForecastService,

@@ -58,7 +58,7 @@ public class TimeSeries implements Serializable {
      * The time series data
      */
     private double[] data;
-    private NumberFormat nf = NumberFormat.getNumberInstance();
+    private final NumberFormat nf = NumberFormat.getNumberInstance();
 
 
     public TimeSeries() {
@@ -148,8 +148,8 @@ public class TimeSeries implements Serializable {
                 /* Perform minimization */
                 for (int s = 0; s < fo.getStartBeforeInterval() - fo.getStartAfterInterval() + 1; s++) {
                     for (int i = 0; i < windowTs.length; i++) {
-                        if ((type == TimeSeriesType.tstMinEnergy && (windowTs[i] < baseTs[(int) (s + i)])) ||
-                                (type == TimeSeriesType.tstMaxEnergy && (windowTs[i] > baseTs[(int) (s + i)]))) {
+                        if ((type == TimeSeriesType.tstMinEnergy && (windowTs[i] < baseTs[s + i])) ||
+                                (type == TimeSeriesType.tstMaxEnergy && (windowTs[i] > baseTs[s + i]))) {
                             baseTs[s + i] = windowTs[i];
                         }
                     }
@@ -604,9 +604,7 @@ public class TimeSeries implements Serializable {
         TimeSeries other = (TimeSeries) obj;
         if (!Arrays.equals(data, other.data))
             return false;
-        if (startInterval != other.startInterval)
-            return false;
-        return true;
+        return startInterval == other.startInterval;
     }
 
     public double getDefaultValue() {

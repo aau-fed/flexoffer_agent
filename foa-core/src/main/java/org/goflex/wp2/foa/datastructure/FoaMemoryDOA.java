@@ -27,13 +27,14 @@
 
 package org.goflex.wp2.foa.datastructure;
 
-import org.goflex.wp2.core.entities.FlexOfferSchedule;
 import org.goflex.wp2.core.entities.OrganizationLoadControlState;
 import org.goflex.wp2.core.entities.ScheduleDetails;
 import org.goflex.wp2.core.models.DeviceFlexibilityDetail;
 import org.goflex.wp2.core.models.FlexOfferT;
 import org.goflex.wp2.core.models.OnOffSchedule;
+import org.goflex.wp2.core.models.PoolDeviceModel;
 import org.goflex.wp2.foa.implementation.TpLinkDeviceService;
+import org.goflex.wp2.foa.wrapper.PoolSchedule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -130,6 +131,21 @@ public class FoaMemoryDOA {
 
     @Bean(name = "devicePendingControlSignals")
     public ConcurrentHashMap<String, Integer> devicePendingControlSignals() {
+        return new ConcurrentHashMap<>();
+    }
+
+    @Bean(name = "poolDeviceDetail")
+    public ConcurrentHashMap<String, Map<String, PoolDeviceModel>> poolDeviceDetail() {
+        return new ConcurrentHashMap<>();
+    }
+
+    @Bean(name = "poolScheduleMap")
+    public ConcurrentHashMap<String, Map<Long, PoolSchedule>> poolScheduleMap() {
+        return new ConcurrentHashMap<>();
+    }
+
+    @Bean(name = "poolTurnedOffDevices")
+    public ConcurrentHashMap<String, Map<String, Date>> poolTurnedOffDevices() {
         return new ConcurrentHashMap<>();
     }
 }

@@ -28,9 +28,11 @@
 package org.goflex.wp2.foa.implementation;
 
 
+import org.aspectj.weaver.ast.Or;
 import org.goflex.wp2.core.entities.*;
 import org.goflex.wp2.core.models.*;
 import org.goflex.wp2.core.repository.DeviceHierarchyRepository;
+import org.goflex.wp2.core.repository.OrganizationRepository;
 import org.goflex.wp2.core.repository.UserRepository;
 import org.goflex.wp2.foa.events.SetupTpLinkDevicesEvent;
 import org.goflex.wp2.foa.interfaces.DeviceDetailService;
@@ -47,8 +49,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -68,17 +72,24 @@ public class UserServiceImpl implements UserService {
 
     private ApplicationEventPublisher applicationEventPublisher;
 
+    private OrganizationRepository organizationRepository;
+
+    @Resource(name = "poolDeviceDetail")
+    private ConcurrentHashMap<String, Map<String, PoolDeviceModel>> poolDeviceDetail;
+
     public UserServiceImpl() {}
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository,
                            DeviceHierarchyRepository deviceHierarchyRepository,
                            DeviceDetailService deviceDetailService,
-                           ApplicationEventPublisher applicationEventPublisher) {
+                           ApplicationEventPublisher applicationEventPublisher,
+                           OrganizationRepository organizationRepository) {
         this.userRepository = userRepository;
         this.deviceHierarchyRepository = deviceHierarchyRepository;
         this.deviceDetailService = deviceDetailService;
         this.applicationEventPublisher = applicationEventPublisher;
+        this.organizationRepository = organizationRepository;
     }
 
 
@@ -121,21 +132,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserT getUser(String userName) {
         UserT user = userRepository.findByUserName(userName);
-        if (user != null) {
-            return user;
-        } else {
-            return null;
-        }
+        return user;
     }
 
     @Override
     public UserT getActiveUser(String userName) {
         UserT user = userRepository.findByUserNameAndEnabled(userName, true);
-        if (user != null) {
-            return user;
-        } else {
-            return null;
-        }
+        return user;
     }
 
     @Override
@@ -217,7 +220,7 @@ public class UserServiceImpl implements UserService {
     }
 
     public boolean tpLinkUserExist(String tplinkUserName) {
-        return userRepository.findByTpLinkUserName(tplinkUserName) == null ? false : true;
+        return userRepository.findByTpLinkUserName(tplinkUserName) != null;
 
     }
 
@@ -326,6 +329,25 @@ public class UserServiceImpl implements UserService {
                 LOGGER.debug("deviceDetailData.getTime is null for {}", deviceDetail.getDeviceId());
             }
 
+            String userName = deviceDetail.getDeviceId().split("@")[0];
+            UserT userT = getUser(userName);
+            Organization org = organizationRepository.findByOrganizationId(userT.getOrganizationId());
+
+            // update pool device model if pool based control is enabled
+            String deviceId = deviceDetail.getDeviceId();
+            if (org.isPoolBasedControl() && poolDeviceDetail.get(org.getOrganizationName()).containsKey(deviceId)) {
+                poolDeviceDetail.get(org.getOrganizationName()).get(deviceId).setCurrentState(deviceDetail.getDeviceState().getValue());
+                poolDeviceDetail.get(org.getOrganizationName()).get(deviceId).setCurrentPower(deviceDetail.getConsumptionTs().getLatestPower());
+                DeviceDataSuppl deviceDataSuppl = deviceDetailData.getDeviceDataSuppl();
+                if (deviceDataSuppl != null) {
+                    if (deviceDetail.getDeviceType() == DeviceType.Boiler) {
+                        poolDeviceDetail.get(org.getOrganizationName()).get(deviceId).setCurrentTemperature(deviceDetailData.getDeviceDataSuppl().getBoilerTemperature());
+                    } else {
+                        poolDeviceDetail.get(org.getOrganizationName()).get(deviceId).setCurrentTemperature(deviceDetailData.getDeviceDataSuppl().getAmbientTemperature());
+                    }
+                }
+            }
+
             return deviceDetail;
         } catch (Exception e) {
             LOGGER.error("Error in updateDeviceState. " + e.getLocalizedMessage());
@@ -396,7 +418,8 @@ public class UserServiceImpl implements UserService {
         Set<DeviceDetail> devices = new HashSet<>(userData.getDeviceDetail());
 
         //TODO: Validate lambda method and replace
-
+        //devices.stream().filter(device -> device.getPlugType()==PlugType.TPLink_HS110)
+        //.forEach(device->userData.removeDevice(device));
 
         if (devices.size() > 0) {
             for (DeviceDetail device : devices) {
@@ -476,7 +499,7 @@ public class UserServiceImpl implements UserService {
             }
 
             if (payload.containsKey("address")) {
-                Object address = (UserAddress) payload.get("address");
+                Object address = payload.get("address");
                 message = message.concat(String.format("address, "));
 
                 if (userData.getUserAddress() == null) {

@@ -1,57 +1,128 @@
-version: '3.6'
+version: '3.8'
 
 services:
+  mysql:
+    container_name: mysql-db-container
+    image: mysql:latest
+    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - 3306:3306
+    volumes:
+      - ./init:/docker-entrypoint-initdb.d
+      - $HOME/mysql_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQl_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    restart: unless-stopped
+
   foa-app:
     container_name: foa-app-container
-    image: cloud.canister.io:5000/muhaftab/foa-app:latest
-    #image: repo.treescale.com/muhaftab/foa-app:latest
-    network_mode: "host"
+    image: bn21/foa-app:latest
+    network_mode: host
     environment:
       profile: container
       port: 8081
+      FOA_DB: ${FOA_DB}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MQTT_HOUSE_LIST_URL: ${MQTT_HOUSE_LIST_URL}
+      MQTT_HOST: ${MQTT_HOST}
+      MQTT_CLOUD_ENABLED: ${MQTT_CLOUD_ENABLED}
     stdin_open: true
     tty: true
     restart: always
+    depends_on: 
+      - mysql
     build:
       context: ./foa-app
       dockerfile: Dockerfile
-    logging:
-      driver: loki
-      options:
-        loki-url: "http://localhost:3100/api/prom/push"
+
   fo-generator:
     container_name: fo-generator-container
-    image: cloud.canister.io:5000/muhaftab/fo-generator:latest
-    #image: repo.treescale.com/muhaftab/fo-generator:latest
-    network_mode: "host"
+    image: bn21/fo-generator:latest
+    network_mode: host
     environment:
       profile: container
       port: 8083
+      FOA_DB: ${FOA_DB}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MQTT_HOUSE_LIST_URL: ${MQTT_HOUSE_LIST_URL}
+      MQTT_HOST: ${MQTT_HOST}
+      MQTT_CLOUD_ENABLED: ${MQTT_CLOUD_ENABLED}
     stdin_open: true
     tty: true
     restart: always
+    depends_on: 
+      - mysql
     build:
       context: ./fo-generator
       dockerfile: Dockerfile
-    logging:
-      driver: loki
-      options:
-        loki-url: "http://localhost:3100/api/prom/push"
+
   sys-monitor:
     container_name: sys-monitor-container
-    image: cloud.canister.io:5000/muhaftab/sys-monitor:latest
-    #image: repo.treescale.com/muhaftab/sys-monitor:latest
-    network_mode: "host"
+    image: bn21/sys-monitor:latest
+    network_mode: host
     environment:
       profile: container
       port: 8088
+      FOA_DB: ${FOA_DB}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MQTT_HOUSE_LIST_URL: ${MQTT_HOUSE_LIST_URL}
+      MQTT_HOST: ${MQTT_HOST}
+      FOA_ALERTS_EMAIL: ${FOA_ALERTS_EMAIL}
+      MQTT_CLOUD_ENABLED: ${MQTT_CLOUD_ENABLED}
     stdin_open: true
     tty: true
     restart: always
+    depends_on: 
+      - mysql
     build:
       context: ./sys-monitor
       dockerfile: Dockerfile
-    logging:
-      driver: loki
-      options:
-        loki-url: "http://localhost:3100/api/prom/push"
+
+  fman-proxy:
+    container_name: fman-proxy-container
+    image: bn21/fman-proxy:latest
+    network_mode: host
+    stdin_open: true
+    tty: true
+    restart: always
+    environment:
+      FMAN_PROXY_DB: ${FMAN_PROXY_DB}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    depends_on:
+      - mysql
+    build:
+      context: ./fman-proxy
+      dockerfile: Dockerfile
+
+  foa-frontend:
+    container_name: foa-frontend-container
+    image: bn21/foa-frontend:latest
+    stdin_open: true
+    tty: true
+    restart: always
+    hostname: localhost
+    ports:
+      ["8080:80"]
+    volumes:
+    - ./foa-frontend/docker_environments/env.js:/usr/share/nginx/html/env.js
+    networks:
+      - frontend-net
+    build:
+      context: ./foa-frontend
+      dockerfile: Dockerfile
+
+networks:
+  frontend-net:
+    driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv6: "false"
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.14.3.1/24

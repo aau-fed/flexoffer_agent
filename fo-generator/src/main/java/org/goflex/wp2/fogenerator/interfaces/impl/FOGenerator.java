@@ -11,6 +11,7 @@ import org.goflex.wp2.foa.events.FlexOfferScheduleReceivedEvent;
 import org.goflex.wp2.foa.interfaces.DeviceDetailService;
 import org.goflex.wp2.foa.interfaces.FOAService;
 import org.goflex.wp2.foa.prediction.OrganizationPrediction;
+import org.goflex.wp2.foa.wrapper.PoolFOWrapper;
 import org.goflex.wp2.fogenerator.interfaces.FlexOfferGenerator;
 import org.goflex.wp2.fogenerator.model.PredictedDemand;
 import org.goflex.wp2.fogenerator.model.PredictionTs;
@@ -19,7 +20,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
@@ -49,17 +53,21 @@ public class FOGenerator implements FlexOfferGenerator {
     @Value("${organization.fo.num.slices}")
     private int numOrgFOSlices;
 
-    private DeviceFlexOfferGroup deviceFlexOfferGroup;
-    private ApplicationEventPublisher applicationEventPublisher;
-    private UserRepository userRepository;
-    private DeviceRepository deviceRepository;
-    private FOAService foaService;
-    private OrganizationRepository organizationRepository;
-    private DeviceDetailService deviceDetailService;
-    private DevicePrognosisRepository devicePrognosisRepository;
+    private final DeviceFlexOfferGroup deviceFlexOfferGroup;
+    private final ApplicationEventPublisher applicationEventPublisher;
+    private final UserRepository userRepository;
+    private final DeviceRepository deviceRepository;
+    private final FOAService foaService;
+    private final OrganizationRepository organizationRepository;
+    private final DeviceDetailService deviceDetailService;
+    private final DevicePrognosisRepository devicePrognosisRepository;
 
     private String foaId;
-    private int latency = 2;
+    private final int latency = 2;
+
+    @Value(value = "${foa.status.url}")
+    private String foaUrl;
+
 
     @Autowired
     public FOGenerator(
@@ -134,7 +142,7 @@ public class FOGenerator implements FlexOfferGenerator {
             */
 
             // 4. temperature guards for swiss heat pumps and boilers
-            if (deviceDetail.getPlugType().equals(PlugType.SwissCase)) {
+            if (deviceDetail.getPlugType().equals(PlugType.MQTT)) {
                 // TODO: replace with per device threshold as each house may have different comfort prefs.
                 Double heatPumpTempThreshold = 20.0;
                 Double boilerTempThreshold = 30.0;
@@ -303,7 +311,6 @@ public class FOGenerator implements FlexOfferGenerator {
         FlexOfferScheduleReceivedEvent scheduleReceivedEvent = new FlexOfferScheduleReceivedEvent(this,
                 "Schedule Received", flexOffer, flexOffer.getDefaultSchedule(), true);
         applicationEventPublisher.publishEvent(scheduleReceivedEvent);
-
         return flexOffer;
     }
 
@@ -615,6 +622,7 @@ public class FOGenerator implements FlexOfferGenerator {
             flexOffer.setLocationId(location);
 
             Date latestAcceptanceTime = new Date(organizationPrediction.get(0).getTimestamp() * interval);
+            // Date latestAcceptanceTime = new Date(flexOffer.getCreationTime().getTime() + (generateForInterval) * interval);
             flexOffer.setAcceptanceBeforeTime(latestAcceptanceTime);
             flexOffer.setAssignmentBeforeTime(latestAcceptanceTime);
             flexOffer.setStartAfterTime(latestAcceptanceTime);
@@ -692,4 +700,209 @@ public class FOGenerator implements FlexOfferGenerator {
         }
     }
 
+    private void sendFoTFOA(PoolFOWrapper poolFOWrapper){
+        RestTemplate restTemplate = new RestTemplate();
+        try {
+            String _uri = this.foaUrl+"/organization/flexOffers";
+            HttpHeaders headers = new HttpHeaders();
+            HttpEntity<PoolFOWrapper> postEntity = new HttpEntity<>(poolFOWrapper, headers);
+            Object response = restTemplate.postForEntity(_uri, postEntity, String.class);
+        } catch (Exception ex) {
+
+        }
+    }
+    @Override
+    public FlexOffer generatePoolFO(Organization organization,
+                                    List<OrganizationPrediction> organizationPrediction,
+                                    List<PoolDeviceModel> deviceModels, boolean isInCoolingPeriod) {
+        List<String> flexDetails= getMinMaxEnergy(deviceModels, organization.getPoolDeviceCoolingPeriod());
+        System.out.println(flexDetails.size());
+        List<String> min_max = Arrays.asList(flexDetails.get(flexDetails.size() - 1).split(", "));
+        double baseEnergy = Double.parseDouble(min_max.get(0));
+        double flexEnergy = Double.parseDouble(min_max.get(1));
+        if(isInCoolingPeriod){
+            flexEnergy = 0;
+        }
+        flexDetails.remove(flexDetails.get(flexDetails.size() - 1));
+        FlexOffer flexOffer = this.createPoolFlexOffer(organization, organizationPrediction,
+                deviceModels, baseEnergy, flexEnergy);
+
+        if (flexOffer == null) {
+            LOGGER.warn("FO is null. Organization: {}", organization.getOrganizationName());
+            return null;
+        }
+        PoolFOWrapper foWrapper = new PoolFOWrapper();
+        foWrapper.setFoId(flexOffer.getId());
+        foWrapper.setDeviceIds(flexDetails);
+        foWrapper.setCoolingPeriod(isInCoolingPeriod);
+        FlexOfferT fo =
+                new FlexOfferT(organization.getOrganizationName(),
+                        "",
+                        new Date(), // store exact time
+                        flexOffer.getFlexOfferSchedule().getStartTime(),
+                        flexOffer.getState(), flexOffer.getId().toString(), flexOffer,
+                        organization.getOrganizationId(), 1);
+
+
+        // save FO to DB
+        foaService.save(fo);
+        //send FO details to FOA
+        sendFoTFOA(foWrapper);
+        FlexOfferGeneratedEvent foGeneratedEvent =
+                new FlexOfferGeneratedEvent(this, "FlexOffer generation request",
+                        "", flexOffer, organization); //Create new event
+        applicationEventPublisher.publishEvent(foGeneratedEvent); //Publish an event
+
+        return flexOffer;
+    }
+
+
+    @Override
+    public FlexOffer createPoolFlexOffer(Organization organization,
+                                         List<OrganizationPrediction> organizationPrediction,
+                                         List<PoolDeviceModel> deviceModel, Double baseEnergy,
+                                         Double flexEnergy) {
+        try {
+            FlexOffer flexOffer = new FlexOffer();
+            flexOffer.setId(UUID.randomUUID());
+            flexOffer.setState(FlexOfferState.Initial);
+            flexOffer.setStateReason("FlexOffer Initialized");
+
+            //server datetime
+            Date date = new Date();
+
+            //flex-offer should be accepted within 15 mins
+            Calendar calendar = GregorianCalendar.getInstance(); // creates a new calendar instance
+            calendar.setTime(date);
+
+            int generateForInterval = 1;  //  1 means generate FO for the next interval
+
+            flexOffer.setCreationTime(date);
+            flexOffer.setOfferedById(organization.getOrganizationName());
+
+            // For now we only set user location, later this attribute can handle multiple location
+            Map<String, GeoLocation> location = new HashMap<>();
+            location.put("userLocation", new GeoLocation());
+            flexOffer.setLocationId(location);
+
+            //Date latestAcceptanceTime = new Date(organizationPrediction.get(0).getTimestamp() * interval)
+            Date latestAcceptanceTime = new Date(flexOffer.getCreationTime().getTime() + (generateForInterval) * interval);
+            flexOffer.setAcceptanceBeforeTime(latestAcceptanceTime);
+            flexOffer.setAssignmentBeforeTime(latestAcceptanceTime);
+            flexOffer.setStartAfterTime(latestAcceptanceTime);
+            flexOffer.setStartBeforeTime(latestAcceptanceTime);
+
+            // The cost constraint is random value and is set by FMAN/Aggregator
+            flexOffer.setTotalCostConstraint(new FlexOfferConstraint(0, 3));
+
+            int numSlices = numOrgFOSlices;
+            int sliceDuration = 1;
+
+            FlexOfferSlice[] flexOfferProfileConstraints = new FlexOfferSlice[numSlices];
+            for (int i = 0; i < flexOfferProfileConstraints.length; i++) {
+                flexOfferProfileConstraints[i] = new FlexOfferSlice();
+                flexOfferProfileConstraints[i].setMinDuration(sliceDuration);
+                flexOfferProfileConstraints[i].setMaxDuration(sliceDuration);
+
+                FlexOfferConstraint[] energyConstraintList = new FlexOfferConstraint[sliceDuration];
+                for (int j = 0; j < energyConstraintList.length; j++) {
+
+                    //double nextSliceOrgPred = organizationPrediction.get(i).getPower()/1000D;
+                    double lowerLimit = Math.max((baseEnergy-flexEnergy), 0.0); //.25 is tolerance
+                    FlexOfferConstraint foc = new FlexOfferConstraint(Math.max((baseEnergy-flexEnergy), 0.0), baseEnergy);
+
+                    energyConstraintList[j] = new FlexOfferConstraint();
+                    energyConstraintList[j].setLower(foc.getLower());
+                    energyConstraintList[j].setUpper(foc.getUpper());
+                }
+                flexOfferProfileConstraints[i].setEnergyConstraintList(energyConstraintList);
+
+                // Tariff price here is random value and is updated by FMAN
+                flexOfferProfileConstraints[i].setTariffConstraint(new FlexOfferTariffConstraint(0.03, 0.15));
+            }
+
+            flexOffer.setFlexOfferProfileConstraints(flexOfferProfileConstraints);
+
+            flexOffer.setTotalEnergyConstraint(flexOffer.getSumEnergyConstraints());
+
+            Date scheduleStartTime = latestAcceptanceTime;
+            TariffConstraintProfile tariffConstraintProfile = new TariffConstraintProfile();
+            tariffConstraintProfile.setStartTime(scheduleStartTime);
+
+            TariffSlice[] tariffConstraintSlices = new TariffSlice[numSlices];
+            for (int i = 0; i < tariffConstraintSlices.length; i++) {
+                tariffConstraintSlices[i] = new TariffSlice();
+                tariffConstraintSlices[i] = new TariffSlice(1, 0.03, 0.15);
+            }
+            tariffConstraintProfile.setTariffSlices(tariffConstraintSlices);
+            flexOffer.setFlexOfferTariffConstraint(tariffConstraintProfile);
+
+            FlexOfferSchedule defaultSchedule = new FlexOfferSchedule();
+            FlexOfferScheduleSlice[] flexOfferScheduleSlices = new FlexOfferScheduleSlice[numSlices];
+            for (int i = 0; i < flexOfferScheduleSlices.length; i++) {
+                flexOfferScheduleSlices[i] = new FlexOfferScheduleSlice();
+
+                FlexOfferConstraint flexOfferConstraint =
+                        flexOffer.getFlexOfferProfileConstraints()[i].getEnergyConstraint(0);
+
+                flexOfferScheduleSlices[i] = new FlexOfferScheduleSlice(flexOfferConstraint.getUpper(), 1);
+                flexOfferScheduleSlices[i].setDuration(sliceDuration);
+            }
+            defaultSchedule.setScheduleSlices(flexOfferScheduleSlices);
+            defaultSchedule.setStartTime(latestAcceptanceTime);
+
+            flexOffer.setDefaultSchedule(defaultSchedule);
+            FlexOfferSchedule flexOfferSchedule = new FlexOfferSchedule(defaultSchedule);
+            flexOfferSchedule.setScheduleId(12345); // random
+            flexOfferSchedule.setUpdateId(1); // this should be incremented every time a new schedule is received
+
+            flexOffer.setInitialFlexOfferSchedule(flexOfferSchedule);
+
+            return flexOffer;
+        } catch (Exception e) {
+            LOGGER.error("Error creating onOffFlexOffer. Error message: {}", e.getLocalizedMessage());
+            return null;
+        }
+    }
+
+    private List<String> getMinMaxEnergy(List<PoolDeviceModel> deviceModels, double deviceCoolingPeriod) {
+        List<String> flexDevices = new ArrayList<>();
+        double baseLoad = 0.0;
+        double flexLoad = 0.0;
+        List<Double> flexDemands = new ArrayList<>();
+        int maxDeviceToInclude = 100;
+        int i = 0;
+        for(PoolDeviceModel poolDeviceModel :deviceModels) {
+            Date dt = new Date();
+            long timeDiff = 61;
+            if(poolDeviceModel.getLastIncludedInPool() != null){
+                timeDiff = (dt.getTime() - poolDeviceModel.getLastIncludedInPool().getTime())/60000;
+            }
+
+            //TODO: See how to implement this
+            deviceCoolingPeriod = 0; // now it's minutes not hours
+            if(poolDeviceModel.getCurrentState() == 1 && timeDiff > deviceCoolingPeriod &&
+                    poolDeviceModel.getCurrentPower() > 300 && i <= maxDeviceToInclude){
+                //flexLoad =  flexLoad + poolDeviceModel.getCurrentPower();
+                flexDemands.add(poolDeviceModel.getCurrentPower());
+                baseLoad =  baseLoad + poolDeviceModel.getCurrentPower();
+                flexDevices.add(poolDeviceModel.getDeviceId());
+                i += 1;
+            }else if (poolDeviceModel.getCurrentPower() != -1){
+                baseLoad =  baseLoad + poolDeviceModel.getCurrentPower();
+            }
+        }
+        //only use 80% of the demand from currently flexible load as flexible demand
+        //int flexLoadSize =  (int) Math.floor(flexDemands.size()*0.8);
+        int flexLoadSize =  (int) Math.floor(flexDemands.size()*1.0);
+        //for(int j=1;j<=flexLoadSize;j++){
+        for (int j = 0; j < flexLoadSize; j++) {
+            flexLoad = flexLoad + flexDemands.get(j);
+        }
+
+        baseLoad = baseLoad/4000;
+        flexLoad = flexLoad/4000;
+        flexDevices.add(baseLoad + ", "+ flexLoad);
+        return flexDevices;
+    }
 }

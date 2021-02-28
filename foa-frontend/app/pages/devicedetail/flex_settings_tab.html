@@ -1,0 +1,306 @@
+<div class="col-md-12 content-tab bg-white">
+
+    <!--Device group-->
+    <div class="generic-block col-md-12 pd-right-fix pd-left-fix" title="{{'TOOLTIP_DEVICE_CATEGORY' | translate}}">
+        <p style="font-weight: bold;">
+            1. {{'DEVICEDETAIL_SELECT_DEVICE_CATEGORY' | translate}}
+        </p>
+
+        <!--First group: Wet Devices-->
+        <div class="device-group-block col-md-3 {{deviceCategory == 'WetDevice' ? 'on' : ''}}"
+            ng-click="setDeviceCategory('WetDevice')" title="{{'TOOLTIP_WET_DEVICE_DESC' | translate}}"
+            onclick="changeClass(this);">
+            <span class="modal-device-group-title" translate>DEVICEDETAIL_WET_DEVICES</span>
+        </div>
+
+        <!--Second group: TCL Devices-->
+        <div class="device-group-block col-md-3 {{deviceCategory == 'TCLDevice' ? 'on' : ''}}"
+            ng-click="setDeviceCategory('TCLDevice')" title="{{'TOOLTIP_TCL_DEVICE_DESC' | translate}}"
+            onclick="changeClass(this);">
+            <span class="modal-device-group-title" translate>DEVICEDETAIL_TCL_DEVICES</span>
+        </div>
+
+        <!--Third group: Charging Devices-->
+        <div class="device-group-block col-md-3 {{deviceCategory == 'ChargingDevice' ? 'on' : ''}}"
+            ng-click="setDeviceCategory('ChargingDevice')" title="{{'TOOLTIP_CHARGING_DEVICE_DESC' | translate}}"
+            onclick="changeClass(this);">
+            <span class="modal-device-group-title" translate>DEVICEDETAIL_CHARGING_DEVICES</span>
+        </div>
+    </div>
+
+    <!-- Down Arrow -->
+    <div class="col-md-12" style="display:flex;justify-content:center;align-items:center;">
+        <i class="icon-nav icon-down-arrow"></i>
+    </div>
+
+    <!--Device type-->
+    <div class="generic-block col-md-12 pd-right-fix pd-left-fix" title="{{'TOOLTIP_DEVICE_TYPE' | translate}}">
+        <p style="font-weight: bold;">
+            2. {{'DEVICEDETAIL_SELECT_DEVICE_TYPE' | translate}}
+        </p>
+
+        <div style="margin-left: 7px;" class="device-type-block {{deviceType == 'Unknown' ? 'on' : ''}}"
+            ng-click="setDeviceType('Unknown')" onclick="changeClass(this);">
+            <i class="icon-modal icon-modal-unknown-load" title="Unknown Device Type"></i>
+            <span class="modal-device-title" translate>DEVICEDETAIL_UNKNOWN_DEVICE_TYPE</span>
+        </div>
+
+        <div class="device-type-block {{deviceType == 'DishWasher' ? 'on' : ''}}" ng-show="deviceCategory=='WetDevice'"
+            ng-click="setDeviceType('DishWasher')" onclick="changeClass(this);">
+            <i class="icon-modal icon-modal-dish-washer" title="DishWasher"></i>
+            <span class="modal-device-title" translate>DEVICEDETAIL_DISH_WASHER</span>
+        </div>
+
+        <div class="device-type-block {{deviceType == 'WasherDryer' ? 'on' : ''}}" ng-show="deviceCategory=='WetDevice'"
+            ng-click="setDeviceType('WasherDryer')" onclick="changeClass(this);">
+            <i class="icon-modal icon-modal-washing-machine" title="WasherDryer"></i>
+            <span class="modal-device-title" translate>DEVICEDETAIL_WASHER_DRYER</span>
+        </div>
+
+        <div class="device-type-block {{deviceType == 'HeatPump' ? 'on' : ''}}" ng-show="deviceCategory=='TCLDevice'"
+            ng-click="setDeviceType('HeatPump')" onclick="changeClass(this);">
+            <i class="icon-modal icon-modal-heat-pump" title="HeatPump"></i>
+            <span class="modal-device-title" translate>DEVICEDETAIL_HEAT_PUMP</span>
+        </div>
+
+        <div class="device-type-block {{deviceType == 'Boiler' ? 'on' : ''}}" ng-show="deviceCategory=='TCLDevice'"
+            ng-click="setDeviceType('Boiler')" onclick="changeClass(this);">
+            <i class="icon-modal icon-modal-boiler" title="Boiler"></i>
+            <span class="modal-device-title" translate>DEVICEDETAIL_BOILER</span>
+        </div>
+
+        <div class="device-type-block {{deviceType == 'AirConditioner' ? 'on' : ''}}"
+            ng-show="deviceCategory=='TCLDevice'" ng-click="setDeviceType('AirConditioner')"
+            onclick="changeClass(this);">
+            <i class="icon-modal icon-modal-air-conditioning" title="AirConditioner"></i>
+            <span class="modal-device-title" translate>DEVICEDETAIL_AIR_CONDITIONER</span>
+        </div>
+
+        <div class="device-type-block {{deviceType == 'RoomHeater' ? 'on' : ''}}" ng-show="deviceCategory=='TCLDevice'"
+            ng-click="setDeviceType('RoomHeater')" onclick="changeClass(this);">
+            <i class="icon-modal icon-modal-room-heater" title="RoomHeater"></i>
+            <span class="modal-device-title" translate>DEVICEDETAIL_ROOM_HEATER</span>
+        </div>
+
+        <div class="device-type-block {{deviceType == 'Refrigerator' ? 'on' : ''}}"
+            ng-show="deviceCategory=='TCLDevice'" ng-click="setDeviceType('Refrigerator')" onclick="changeClass(this);">
+            <i class="icon-modal icon-modal-refrigerator" title="Refrigerator"></i>
+            <span class="modal-device-title" translate>DEVICEDETAIL_REFRIGERATOR</span>
+        </div>
+
+        <div class="device-type-block {{deviceType == 'Freezer' ? 'on' : ''}}" ng-show="deviceCategory=='TCLDevice'"
+            ng-click="setDeviceType('Freezer')" onclick="changeClass(this);">
+            <i class="icon-modal icon-modal-freezer" title="Freezer"></i>
+            <span class="modal-device-title" translate>DEVICEDETAIL_FREEZER</span>
+        </div>
+
+        <div class="device-type-block {{deviceType == 'ElectricBike' ? 'on' : ''}}"
+            ng-show="deviceCategory=='ChargingDevice'" ng-click="setDeviceType('ElectricBike')"
+            onclick="changeClass(this);">
+            <i class="icon-modal icon-modal-e-bike" title="ElectricBike"></i>
+            <span class="modal-device-title" translate>DEVICEDETAIL_ELECTRIC_BIKE</span>
+        </div>
+
+        <div class="device-type-block {{deviceType == 'ElectricLawnMower' ? 'on' : ''}}"
+            ng-show="deviceCategory=='ChargingDevice'" ng-click="setDeviceType('ElectricLawnMower')"
+            onclick="changeClass(this);">
+            <i class="icon-modal icon-modal-lawn-mower" title="ElectricLawnMower"></i>
+            <span class="modal-device-title" translate>DEVICEDETAIL_ELECTRIC_LAWN_MOVER</span>
+        </div>
+
+        <div class="device-type-block {{deviceType == 'ElectricCar' ? 'on' : ''}}"
+            ng-show="deviceCategory=='ChargingDevice'" ng-click="setDeviceType('ElectricCar')"
+            onclick="changeClass(this);">
+            <i class="icon-modal icon-modal-car-charging" title="ElectricCar"></i>
+            <span class="modal-device-title" translate>DEVICEDETAIL_ELECTRIC_CAR</span>
+        </div>
+
+        <!--
+        <div class="device-type-block {{deviceType == 'Lamp' ? 'on' : ''}}" 
+            ng-click="setDeviceType('Lamp')" onclick="changeClass(this);">
+            <i class="icon-modal icon-modal-lamp" title="Lamp"></i>
+            <span class="modal-device-title" translate>DEVICEDETAIL_LAMP</span>
+        </div>
+
+        <div class="device-type-block {{deviceType == 'PV' ? 'on' : ''}}" 
+            ng-click="setDeviceType('PV')" onclick="changeClass(this);">
+            <i class="icon-modal icon-modal-pv" title="PV"></i>
+            <span class="modal-device-title" translate>DEVICEDETAIL_PV</span>
+        </div>
+
+        <div class="device-type-block {{deviceType == 'Wind' ? 'on' : ''}}" 
+            ng-click="setDeviceType('Wind')" onclick="changeClass(this);">
+            <i class="icon-modal icon-modal-wind" title="Wind"></i>
+            <span class="modal-device-title" translate>DEVICEDETAIL_WIND</span>
+        </div>
+        -->
+    </div>
+
+    <!-- Down Arrow -->
+    <div class="col-md-12" style="display:flex;justify-content:center;align-items:center;">
+        <i class="icon-nav icon-down-arrow"></i>
+    </div>
+
+    <!--Device flexibility params-->
+    <div class="generic-block col-md-12 pd-right-fix pd-left-fix" title="{{'TOOLTIP_DEVICE_FLEX_PARAM' | translate}}">
+        <p style="font-weight: bold;">
+            3. {{'DEVICEDETAIL_SET_FLEXIBILITY_PARAMETERS' | translate}}
+        </p>
+
+        <br>
+
+        <div class="col-md-8" style="width: 70%;">
+            <form class="form-horizontal">
+
+                <!--In case of unknown device type-->
+                <div ng-show="deviceType == 'Unknown'">
+                    <p>{{'DEVICEDETAIL_FLEX_PARAM_ERROR' | translate}}</p>
+                </div>
+
+                <!--Daily Control Window-->
+                <!-- <div style="margin-left:-7px;" class="form-group flex-param-block"
+                    ng-show="deviceCategoryMap['TCLDevice'].indexOf(deviceType) > -1" -->
+                <div style="margin-left:-7px;" class="form-group flex-param-block"
+                    ng-show="deviceType != 'Unknown'"
+                    title="{{'TOOLTIP_DAILY_CONTROL_WINDOW' | translate}}">
+                    <label class="col-sm-3 flex-param-label">
+                        {{'DEVICEDETAIL_DAILY_CONTROL_WINDOW' | translate}}:
+                    </label>
+                    <div class="col-sm-9">
+                        <input type="text" id="daily-control-window" class="daily-control-window"
+                            ng-model="dailyControlWindow" />
+                    </div>
+                </div>
+
+                <!--Maximum Start Delay-->
+                <div style="margin-left:-7px;" class="form-group flex-param-block"
+                    ng-show="deviceCategoryMap['WetDevice'].indexOf(deviceType) > -1"
+                    title="{{'TOOLTIP_MAXIMUM_START_DELAY' | translate}}">
+                    <label class="col-sm-3 flex-param-label">
+                        {{'DEVICEDETAIL_MAXIMUM_START_DELAY' | translate}}:
+                    </label>
+                    <div class="col-sm-9">
+                        <input type="text" id="maximum-start-delay" class="maximum-start-delay"
+                            ng-model="maxInterruptionDelay" />
+                    </div>
+                </div>
+
+                <!--Latest Notification Time-->
+                <div style="margin-left:-7px;" class="form-group flex-param-block"
+                    ng-show="deviceCategoryMap['WetDevice'].indexOf(deviceType) > -1"
+                    title="{{deviceCategoryMap['ChargingDevice'].indexOf(deviceType) > -1 ? 'TOOLTIP_LATEST_NOTIFICATION_TIME_BATTERY' : 'TOOLTIP_LATEST_NOTIFICATION_TIME' | translate}}">
+                    <label class="col-sm-3 flex-param-label">
+                        {{'DEVICEDETAIL_LATEST_NOTIFICATION_TIME' | translate}}:
+                    </label>
+                    <div class="col-sm-9">
+                        <input type="text" id="latest-notification-time" class="latest-notification-time"
+                            ng-model="latestAcceptanceTime" />
+                    </div>
+                </div>
+
+                <!--Number of Controlled Periods (Interruptions) Per Day-->
+                <div style="margin-left:-7px;" class="form-group flex-param-block"
+                    ng-show="deviceCategoryMap['TCLDevice'].indexOf(deviceType) > -1 || (role == 'ROLE_ADMIN' && deviceType != 'Unknown')"
+                    title="{{'TOOLTIP_INTERRUPTION_PER_DAY' | translate}}">
+                    <label class="col-sm-3 flex-param-label">
+                        {{'DEVICEDETAIL_INTERRUPTION_PER_DAY' | translate}}:
+                    </label>
+                    <div class="col-sm-9">
+                        <input type="text" id="interruptions-per-day" class="interruptions-per-day"
+                            ng-model="noOfInterruptionInADay" />
+                    </div>
+                </div>
+
+                <!--Duration of an Interruption-->
+                <div style="margin-left:-7px;" class="form-group flex-param-block"
+                    ng-show="deviceCategoryMap['TCLDevice'].indexOf(deviceType) > -1"
+                    title="{{'TOOLTIP_DURATION_OF_INTERRUPTION' | translate}}">
+                    <label class="col-sm-3 flex-param-label">
+                        {{'DEVICEDETAIL_DURATION_OF_INTERRUPTION' | translate}}:
+                    </label>
+                    <div class="col-sm-9">
+                        <input type="text" id="duration-of-interruption" class="duration-of-interruption"
+                            ng-model="maxInterruptionLength" />
+                    </div>
+                </div>
+
+                <!--Distance Between Two Consecutive Interruptions-->
+                <div style="margin-left:-7px;" class="form-group flex-param-block"
+                    ng-show="deviceCategoryMap['TCLDevice'].indexOf(deviceType) > -1 || (role == 'ROLE_ADMIN' && deviceType != 'Unknown')"
+                    title="{{'TOOLTIP_DISTANCE_BETWEEN_INTERRUPTIONS' | translate}}">
+                    <label class="col-sm-3 flex-param-label">
+                        {{'DEVICEDETAIL_DISTANCE_BETWEEN_INTERRUPTIONS' | translate}}:
+                    </label>
+                    <div class="col-sm-9">
+                        <input type="text" id="distance-between-interruptions" class="distance-between-interruptions"
+                            ng-model="minInterruptionInterval" />
+                    </div>
+                </div>
+
+                <!--Charged Battery In-->
+                <div style="margin-left:-7px;" class="form-group flex-param-block"
+                    ng-show="deviceCategoryMap['ChargingDevice'].indexOf(deviceType) > -1"
+                    title="{{'TOOLTIP_START_CHARGING_IN' | translate}}">
+                    <label class="col-sm-3 flex-param-label">
+                        {{'DEVICEDETAIL_START_CHARGING_IN' | translate}}:
+                    </label>
+                    <div class="col-sm-9">
+                        <input type="text" id="charged-battery-in" class="charged-battery-in"
+                            ng-model="maxInterruptionDelay" />
+                    </div>
+                </div>
+
+            </form>
+        </div>
+
+        <div class="col-md-4" style="width:28%;">
+
+            <!--Prognosis-->
+            <div class="prognosis-block" title="{{'TOOLTIP_PROGNOSIS' | translate}}">
+                <strong>{{'PROGNOSIS_TITLE' | translate}}:</strong>
+
+                <p ng-show="deviceType == 'Unknown'" translate="PROGNOSIS_UNKNOWN_DEVICE">
+                </p>
+
+                <p ng-show="deviceCategoryMap['WetDevice'].indexOf(deviceType) > -1" translate="PROGNOSIS_WET_DEVICE"
+                    translate-values="{deviceType:deviceType,
+                                latHours: Math.floor(latestAcceptanceTime*15/60),
+                                latMinutes: (latestAcceptanceTime*15) % 60, 
+                                midHours: Math.floor(maxInterruptionDelay*15/60),
+                                midMinutes: (maxInterruptionDelay*15) % 60}">
+                </p>
+
+                <p ng-show="deviceCategoryMap['TCLDevice'].indexOf(deviceType) > -1" translate="PROGNOSIS_TCL_DEVICE"
+                    translate-values="{deviceType: deviceType,
+                                noOfInterruptionInADay: noOfInterruptionInADay,
+                                dailyControlStart: dailyControlStart,
+                                dailyControlEnd: dailyControlEnd,
+                                milHours: Math.floor(maxInterruptionLength*15/60),
+                                milMinutes: (maxInterruptionLength*15) % 60, 
+                                miiHours: Math.floor(minInterruptionInterval*15/60),
+                                miiMinutes: (minInterruptionInterval*15) % 60}">
+                </p>
+
+                <p ng-show="deviceCategoryMap['ChargingDevice'].indexOf(deviceType) > -1"
+                    translate="PROGNOSIS_CHARGING_DEVICE" translate-values="{deviceType: deviceType,
+                                latHours: Math.floor(latestAcceptanceTime*15/60),
+                                latMinutes: (latestAcceptanceTime*15) % 60, 
+                                midHours: Math.floor(maxInterruptionDelay*15/60),
+                                midMinutes: (maxInterruptionDelay*15) % 60}">
+                </p>
+
+            </div>
+
+            <!-- Flexibility Params Factory Reset Button -->
+            <div ng-show="deviceType != 'Unknown'" class="center-contents">
+                <!-- <button style="position: relative; width: 120px; height: 40px; margin-bottom: 5px;" type="button" -->
+                <button type="button" class="btn btn-primary" ng-click="factoryResetDeviceFlexibilityParams();"
+                    title="{{'TOOLTIP_FACTORY_RESET' | translate}}" translate>DEVICEDETAIL_FACTORY_RESET</button>
+            </div>
+        </div>
+
+
+    </div>
+
+    <div class="clearfix"> </div>
+</div>

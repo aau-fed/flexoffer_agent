@@ -1,0 +1,39 @@
+<section class="main-content">
+    <div class="container-fluid">
+
+        <div class="pull-right">
+            <p>{{'CHANGE_LANGUAGE' | translate}}:</p>
+            <select style="height: 30px; margin-bottom: 10px;" class="form-control" ng-model="lang"
+                ng-change="changeLanguage()">
+                <option value="en" translate>BUTTON_LANG_EN</option>
+                <option value="de" translate>BUTTON_LANG_DE</option>
+            </select>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-md-offset-3 col-md-6 sn-form">
+
+                    <h2 class="title text-center" style="margin-bottom: 25px;">{{'FORGOT_PASSWORD' | translate}}</h2>
+                    <small class="form-text sub-title text-center">{{'FORGOT_PASSWORD_SUBTITLE' | translate}}</small>
+                    <form ng-submit="submit()">
+                        <div ng-class="messageType" role="alert" ng-bind="messageText"></div>
+                       <div class="form-group">
+                            <label class="sr-only" for="input-email">{{'USER_EMAIL' | translate}}</label>
+                            <input class="form-control" id="input-email" name="email" placeholder="{{'USER_EMAIL_OR_KASA_EMAIL' | translate}} *" type="text" ng-model="email">
+                        </div>
+                       <button class="btn btn-block btn-hero-success" type="submit">
+                           {{'FORGOT_PASSWORD_EMAIL_NEW_PASSWORD' | translate}} 
+                       </button>
+                    </form>
+                    <div class="links text-center">
+                        <small class="form-text">
+                            <a href="#!/login"><strong>{{'LOGIN_TITLE' | translate}}</strong></a>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>            
+</section>

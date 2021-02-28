@@ -42,7 +42,7 @@ public enum MessageCode {
     DuplicateLoad(4),
     UnknownError(5);
 
-    private int value;
+    private final int value;
 
     MessageCode(int value) {
         this.value = value;

@@ -1,0 +1,91 @@
+<div class="col-md-9 sn-form sn-form-profile">
+    <h2 class="title" style="margin-bottom: 25px;" translate>USER_ADD_USER</h2>
+
+    <div class="row">
+        <form ng-submit="submit()">
+            <div class="col-md-12">
+                <div ng-class="messageType" role="alert" ng-bind="messageText"></div>
+
+                <div class="form-group">
+                    <label>{{'USER_USERNAME' | translate}}</label>
+                    <input type="text" class="form-control" placeholder="{{'USER_USERNAME' | translate}}"
+                        ng-model="username" required>
+                </div>
+
+                <div class="form-group">
+                    <label>{{'USER_PASSWORD' | translate}}</label>
+                    <input type="password" class="form-control" placeholder="{{'USER_PASSWORD' | translate}}"
+                        ng-model="password" required>
+                </div>
+
+                <div class="form-group" ng-show="role=='ROLE_ADMIN'">
+                    <label>{{'USER_ROLE' | translate}}</label>
+                    <select ng-model="newUserRole">
+                        <option value="ROLE_PROSUMER" selected>ROLE_PROSUMER</option>
+                        <option value="ROLE_ADMIN">ROLE_ADMIN</option>
+                    </select>
+                </div>
+
+                <div class="form-group" ng-show="newUserRole=='ROLE_ADMIN'">
+                    <label>{{'USER_EMAIL' | translate}}</label>
+                    <input type="text" class="form-control" placeholder="{{'USER_EMAIL' | translate}}"
+                        ng-model="email" ng-required="newUserRole=='ROLE_ADMIN'">
+                </div>
+
+                <div class="form-group" ng-show="newUserRole!='ROLE_ADMIN'">
+                    <label>{{'USER_TPLINK_USERNAME' | translate}}</label>
+                    <input type="text" class="form-control" placeholder="{{'USER_TPLINK_USERNAME' | translate}}"
+                        ng-model="tpLinkUserName">
+                </div>
+                <div class="form-group" ng-show="newUserRole!='ROLE_ADMIN'">
+                    <label>{{'USER_TPLINK_PASSWORD' | translate}}</label>
+                    <input type="password" class="form-control" placeholder="{{'USER_TPLINK_PASSWORD' | translate}}"
+                        ng-model="tpLinkPassword" ng-required="tpLinkUserName">
+                </div>
+
+                <div class="form-group">
+                    <label>{{'USER_PHONE' | translate}}</label>
+                    <div class="row">
+                        <div class="col-xs-2">
+                            <select disabled="true" class="form-control" ng-model="countryCodes[organizationId]">
+                                <option value="+357">+357</option>
+                                <option value="+49">+49</option>
+                                <option value="+41">+41</option>
+                                <option value="+45">+45</option>
+                            </select>
+                        </div>
+                        <div class="col-xs-10">
+                            <input class="form-control" type="text" placeholder="{{'USER_PHONE' | translate}}"
+                                ng-model="phone">
+                        </div>
+                    </div>
+                </div>
+
+                <br>
+
+            </div>
+
+            <div class="col-md-12">
+                <div class="form-group" title="{{'TOOLTIP_USER_LOCATION' | translate}}">
+                    <label for="address"><span translate>PROFILE_ADDRESS</label>
+                    <input ng-model="vm.address.formattedAddress" ng-autocomplete details="vm.address"
+                        id="new-user-address" name="address" type="text" ng-change="addressChanged()" />
+                </div>
+
+                <div id="new-user-map"></div>
+            </div>
+
+
+            <div class="col-md-12 center-contents">
+                <div class="col-md-12" style="margin-top: 20px;">
+                    <button class="btn btn-block btn-hero-success" type="submit" ng-disabled="isProcessing" translate>
+                        USER_ADD
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="links"></div>
+    <div class="clearfix"></div>
+</div>

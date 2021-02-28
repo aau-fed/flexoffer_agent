@@ -44,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -52,9 +53,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 
@@ -72,15 +75,18 @@ public class DeviceController {
     @Value("${cloud.api.url}")
     private String cloudApiUrl;
 
+
     private DeviceHierarchyRepository deviceHierarchyRepository;
     private UserService userService;
     private DeviceDetailService deviceDetailService;
     private ImplementationsHandler implementationsHandler;
-    private SimulatedDeviceService simulatedDeviceService;
     private ControlDetailService controlDetailService;
     private DeviceStateService deviceStateService;
     private DeviceFlexOfferGroup deviceFlexOfferGroup;
 
+
+    @Autowired(required = false)
+    private SimulatedDeviceService simulatedDeviceService;
 
     public DeviceController() {
     }
@@ -91,7 +97,6 @@ public class DeviceController {
             UserService userService,
             DeviceDetailService deviceDetailService,
             ImplementationsHandler implementationsHandler,
-            SimulatedDeviceService simulatedDeviceService,
             ControlDetailService controlDetailService,
             DeviceStateService deviceStateService,
             DeviceFlexOfferGroup deviceFlexOfferGroup
@@ -101,7 +106,6 @@ public class DeviceController {
         this.userService = userService;
         this.deviceDetailService = deviceDetailService;
         this.implementationsHandler = implementationsHandler;
-        this.simulatedDeviceService = simulatedDeviceService;
         this.controlDetailService = controlDetailService;
         this.deviceStateService = deviceStateService;
         this.deviceFlexOfferGroup = deviceFlexOfferGroup;
@@ -1050,9 +1054,9 @@ public class DeviceController {
             return errorResponse("Unauthorized to access the service", HttpStatus.UNAUTHORIZED);
         }
         String sessionUser = authentication.getName();
-
-        String deviceId = simulatedDeviceService.createSimulatedDevice(sessionUser, simDeviceJson);
-
+        //TODO: disabled not supported for currently
+        //String deviceId = simulatedDeviceService.createSimulatedDevice(sessionUser, simDeviceJson);
+        String deviceId = "Currently this service is not supported, contact admin!!";
         ResponseMessage responseMessage = new ResponseMessage();
         responseMessage.setMessage(deviceId);
         return new ResponseEntity<>(responseMessage, HttpStatus.OK);

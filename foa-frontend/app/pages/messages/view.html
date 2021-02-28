@@ -1,0 +1,50 @@
+<div class="col-md-9 message-container sn-form sn-form-profile">
+	<div class="table-responsive">
+		<table class="table table-condensed">
+			<tr>
+				<th ng-click="sort('messageId')"><span translate>MESSAGES_ID</span>
+					<span class="glyphicon sort-icon" ng-show="sortKey=='messageId'" ng-class="{'glyphicon-chevron-up':reverse,'glyphicon-chevron-down':!reverse}"></span>
+				</th>
+				<th ng-click="sort('message')"><span translate>MESSAGES_MSG</span>
+					<span class="glyphicon sort-icon" ng-show="sortKey=='message'" ng-class="{'glyphicon-chevron-up':reverse,'glyphicon-chevron-down':!reverse}"></span>
+				</th>
+				<th ng-click="sort('userName')"><span translate>MESSAGES_USERNAME</span>
+					<span class="glyphicon sort-icon" ng-show="sortKey=='userName'" ng-class="{'glyphicon-chevron-up':reverse,'glyphicon-chevron-down':!reverse}"></span>
+				</th>
+				<th ng-click="sort('deviceID')"><span translate>MESSAGES_DEVICE_ID</span>
+					<span class="glyphicon sort-icon" ng-show="sortKey=='deviceID'" ng-class="{'glyphicon-chevron-up':reverse,'glyphicon-chevron-down':!reverse}"></span>
+				</th>
+				<th ng-click="sort('messageDate')"><span translate>MESSAGES_DATE</span>
+					<span class="glyphicon sort-icon" ng-show="sortKey=='messageDate'" ng-class="{'glyphicon-chevron-up':reverse,'glyphicon-chevron-down':!reverse}"></span>
+				</th>
+			</tr>
+			<tr class="{{message.messageStatus == 0 ? 'new' : ''}}" dir-paginate="message in messages | orderBy:sortKey:reverse | filter:search | itemsPerPage:pageSize">
+				<td>{{message.messageId}}</td>
+				<td>{{message.message}}</td>
+				<td>{{message.userName}}</td>
+				<td style="font-size: x-small;">{{message.deviceID}}</td>
+				<td>{{message.messageDate | date:'yyyy-MM-dd HH:mm:ss'}}</td>
+			</tr>
+
+		</table>
+	</div>
+	<dir-pagination-controls max-size="5" direction-links="true" boundary-links="true">
+	</dir-pagination-controls>
+
+
+	<div class="col-md-2 pull-right">
+		<label translate>MESSAGES_PER_PAGE</label>
+		<input class="form-control" type="number" min="1" max="100" ng-model="pageSize">
+	</div>
+
+	<div class="col-md-3 pull-right">
+		<label translate>MESSAGES_SEARCH</label>
+		<input class="form-control" type="text" ng-model="search" placeholder="{{'MESSAGES_PLACEHOLDER' | translate}}">
+	</div>
+
+	<div class="col-md-3 pull-right">
+		<label>&nbsp;</label>
+		<button class="form-control btn btn-default" ng-click="clearAllMessages()" translate>MESSAGES_CLEAR</button>
+	</div>
+
+</div>

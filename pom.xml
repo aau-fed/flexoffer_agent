@@ -89,23 +89,14 @@
     </build>
 
     <modules>
-        <!-- GoFLEX core specification -->
         <module>core-entities</module>
         <module>foa-core</module>
         <module>foa-app</module>
-        <!--<module>foa-scheduler</module>-->
         <module>fo-generator</module>
         <module>sys-monitor</module>
-        <!--    <module>utils</module> -->
-        <!--    <module>foa-webui</module> -->
-        <!--    <module>fman-api</module> -->
-        <!--    <module>eureka-server</module> -->
-        <!--    <module>config-server</module> -->
-
-
-        <!-- FlexOffer Manager dependencies -->
-        <!--<module>fman-api</module>-->
+        <module>fman-proxy</module>
     </modules>
+
     <pluginRepositories>
         <pluginRepository>
             <id>spring-snapshots</id>

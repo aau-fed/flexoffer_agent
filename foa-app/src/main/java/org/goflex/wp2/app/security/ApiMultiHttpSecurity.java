@@ -58,6 +58,8 @@ public class ApiMultiHttpSecurity {
                         .antMatchers("/api/v1.0/prosumer/register").permitAll()//
                         .antMatchers("/api/v1.0/prosumer/forgotPassword").permitAll()//
                         .antMatchers("/api/v1.0/server/status").permitAll()//
+                        .antMatchers("/api/v1.0/server/getModelStateMap/{orgName}").permitAll()//
+                        .antMatchers("/api/v1.0//organization/flexOffers/{orgName}").permitAll()//
                         .antMatchers("/api/v1.0/prosumer/login").permitAll()//
                         .antMatchers("/api/v1.0/prosumer/userNameExists").permitAll()//
                         .antMatchers("/api/v1.0/prosumer/tpLinkAccountExists").permitAll()//

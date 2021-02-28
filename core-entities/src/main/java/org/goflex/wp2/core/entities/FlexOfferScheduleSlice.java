@@ -116,9 +116,7 @@ public class FlexOfferScheduleSlice implements Serializable {
             return false;
         if (tariff != other.tariff)
             return false;
-        if (duration != other.duration)
-            return false;
-        return true;
+        return duration == other.duration;
     }
 
     public double getEnergyAmount() {

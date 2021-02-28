@@ -166,10 +166,8 @@ public class FlexOfferConstraint implements Serializable {
         if (Double.doubleToLongBits(lower) != Double
                 .doubleToLongBits(other.lower))
             return false;
-        if (Double.doubleToLongBits(upper) != Double
-                .doubleToLongBits(other.upper))
-            return false;
-        return true;
+        return Double.doubleToLongBits(upper) == Double
+                .doubleToLongBits(other.upper);
     }
 
 }

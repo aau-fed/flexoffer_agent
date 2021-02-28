@@ -44,8 +44,8 @@ import java.util.Date;
 public class ProductionFOGenerationListener implements ApplicationListener<ProductionFOGeneration> {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductionFOGenerationListener.class);
 
-    private FlexOfferGenerator foGenerator;
-    private ProductionForecastService productionForecastService;
+    private final FlexOfferGenerator foGenerator;
+    private final ProductionForecastService productionForecastService;
 
     @Autowired
     public ProductionFOGenerationListener(

@@ -45,7 +45,7 @@ public interface FlexOfferRepository_abs extends JpaRepository<FlexOfferT, Long>
     //@Query("SELECT f.flexoffer FROM flex_offer f where f.clientID = :clientID")
     List<FlexOfferT> findAll();
 
-    public List<FlexOfferT> findByclientID(String clientID);
+    List<FlexOfferT> findByclientID(String clientID);
 
 //     List<FlexOffer> findFlexOfferByclientIDAndDateAndstatus(String clientID, Date creationTime, String status);
 //     List<FlexOffer> findFlexOfferByplugIDAndDateAndstatus(String plugID, Date creationTime, String status);

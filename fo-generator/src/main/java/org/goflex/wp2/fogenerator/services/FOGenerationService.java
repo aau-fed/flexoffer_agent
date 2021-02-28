@@ -1,26 +1,16 @@
 package org.goflex.wp2.fogenerator.services;
 
-import org.goflex.wp2.core.entities.DeviceFlexOfferGroup;
-import org.goflex.wp2.core.entities.DeviceState;
-import org.goflex.wp2.core.entities.FlexOffer;
-import org.goflex.wp2.core.entities.FlexibilityGroupType;
-import org.goflex.wp2.core.models.DeviceDetail;
-import org.goflex.wp2.core.models.FlexOfferT;
-import org.goflex.wp2.core.models.Organization;
-import org.goflex.wp2.core.models.UserT;
+import org.goflex.wp2.core.entities.*;
+import org.goflex.wp2.core.models.*;
 import org.goflex.wp2.core.repository.DeviceRepository;
 import org.goflex.wp2.core.repository.OrganizationRepository;
 import org.goflex.wp2.core.repository.UserRepository;
-import org.goflex.wp2.foa.events.DeviceStateChangeEvent;
 import org.goflex.wp2.foa.implementation.FOAServiceImpl;
 import org.goflex.wp2.foa.prediction.OrganizationPrediction;
 import org.goflex.wp2.foa.prediction.OrganizationPredictionRepository;
-import org.goflex.wp2.fogenerator.event.NonTCLEVFOGeneration;
-import org.goflex.wp2.fogenerator.event.OrganizationFOGenerationEvent;
-import org.goflex.wp2.fogenerator.event.ProductionFOGeneration;
-import org.goflex.wp2.fogenerator.event.TCLFOGeneration;
+import org.goflex.wp2.fogenerator.event.*;
 import org.goflex.wp2.fogenerator.interfaces.FlexOfferGenerator;
-import org.hibernate.Hibernate;
+import org.goflex.wp2.fogenerator.interfaces.impl.SwissDeviceModelDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +19,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 import java.text.DateFormat;
@@ -41,28 +32,38 @@ public class FOGenerationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FOGenerationService.class);
 
+    private final double coolingperiod = 2;
+
+    private Date lastFOStartTime = null;
+
     @Resource(name = "deviceGeneratedFOCount")
     ConcurrentHashMap<String, Map<String, List<Double>>> deviceGeneratedFOCount = new ConcurrentHashMap<>();
 
     @Resource(name = "startGeneratingFo")
     private ConcurrentHashMap<String, Integer> startGeneratingFo;
 
-    @Value("${organization.fo.num.slices}")
+    @Value("1")
     private int numOrgFOSlices;
 
-    private ApplicationEventPublisher applicationEventPublisher;
-    private UserRepository userRepository;
-    private DeviceRepository deviceRepository;
-    private FlexOfferGenerator foGenerator;
-    private OrganizationRepository organizationRepository;
-    private DeviceFlexOfferGroup deviceFlexOfferGroup;
-    private FOAServiceImpl foaService;
-    private OrganizationPredictionRepository organizationPredictionRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
+    private final UserRepository userRepository;
+    private final DeviceRepository deviceRepository;
+    private final FlexOfferGenerator foGenerator;
+    private final OrganizationRepository organizationRepository;
+    private final DeviceFlexOfferGroup deviceFlexOfferGroup;
+    private final FOAServiceImpl foaService;
+    private final OrganizationPredictionRepository organizationPredictionRepository;
 
     private Date dt;
     private String currentDate;
-    private Calendar cal = Calendar.getInstance();
+    private final Calendar cal = Calendar.getInstance();
     private double currentHour = 0.0;
+
+    //@Autowired
+    //private RestTemplate restTemplate;
+
+    @Value(value = "${foa.status.url}")
+    private String foaUrl;
 
     @Autowired
     public FOGenerationService(
@@ -167,7 +168,7 @@ public class FOGenerationService {
     }
 
     //@Scheduled(fixedRate = 300000)
-    @Scheduled(fixedRate = 60000)
+    //@Scheduled(fixedRate = 60000)
     public void generateFOsForNextInterval() {
 
         if (startGeneratingFo.get("start") == 0) {
@@ -243,31 +244,74 @@ public class FOGenerationService {
     // second, minute, hour, day of month, month, day of week.
     //e.g. "0 * * * * MON-FRI" means once per minute on weekdays
     //@Scheduled(fixedRate = 60000)
-    @Scheduled(cron = "0 57 * * * *")
+    @Scheduled(cron = "0 12,27,42,57 * * * *")
     public void runOrganizationFOGenerationRoutine() {
+
         LOGGER.info("Generating organization level FOs for each organization");
-        organizationRepository.findAll().forEach(this::processForOrganization);
+        organizationRepository.findAll()
+                .stream().filter(o -> o.getDirectControlMode() != OrganizationLoadControlState.Stopped)
+                .forEach(this::processForOrganization);
         LOGGER.info("Completed generating organization level FOs for each organization");
     }
 
     private void processForOrganization(Organization organization) {
         int numSlices = numOrgFOSlices;
-        this.generateOrganizationalFlexOfferForNextXSlices(organization, numSlices);
+        boolean generateFO = false;
+        if(lastFOStartTime == null){
+            lastFOStartTime = new Date();
+        }else{
+            Date currentTime = new Date();
+            double diff = (currentTime.getTime() - lastFOStartTime.getTime())/(60000*60.0);
+            if(diff > (coolingperiod + .5)){
+                LOGGER.info("Cooling period completed, start time set to current time");
+                lastFOStartTime = new Date();
+            }else if(diff > coolingperiod){
+                LOGGER.info("FOG is now in cooling period");
+                generateFO = true;
+            }
+        }
+        this.generateOrganizationalFlexOfferForNextXSlices(organization, numSlices, generateFO);
     }
 
-    private void generateOrganizationalFlexOfferForNextXSlices(Organization organization, int numSlices) {
+    private List<PoolDeviceModel> getDeviceModelStateMap(String orgName) {
+        RestTemplate restTemplate = new RestTemplate();
+        try {
+            String _uri = this.foaUrl+"server/getModelStateMap/" + orgName;
+            List<PoolDeviceModel> poolDeviceModels = restTemplate.getForObject(_uri, SwissDeviceModelDTO.class).getDeviceModels();
+           return poolDeviceModels;
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    private void generateOrganizationalFlexOfferForNextXSlices(Organization organization, int numSlices,
+                                                               boolean inCoolingPeriod) {
 
         long timestampFrom = FlexOffer.toFlexOfferTime(new Date())+1;
         long timestampTo = timestampFrom+numSlices;
         List<OrganizationPrediction> organizationPredictions = organizationPredictionRepository
                 .findByOrganizationIdAndInterval(organization.getOrganizationId(), timestampFrom, timestampTo);
+        if(organization.isPoolBasedControl()) {
+            List<PoolDeviceModel> deviceModels = this.getDeviceModelStateMap(organization.getOrganizationName());
+            if (organizationPredictions.size() == numSlices || 1==1) {
+                LOGGER.info(organizationPredictions.toString());
+                OrganizationFOGenerationEventPool oFOGE = new OrganizationFOGenerationEventPool(
+                        this, "Organizational level FO for next slice", "",
+                        organizationPredictions, organization, deviceModels, inCoolingPeriod);
+                this.applicationEventPublisher.publishEvent(oFOGE);
+            }
 
-        if (organizationPredictions.size() == numSlices) {
-            LOGGER.info(organizationPredictions.toString());
-            OrganizationFOGenerationEvent organizationFOGenerationEvent = new OrganizationFOGenerationEvent(
-                    this, "Organizational level FO for next slice", "",
-                    organizationPredictions, organization);
-            this.applicationEventPublisher.publishEvent(organizationFOGenerationEvent);
+        } else {
+            /*
+            Object deviceModelState = this.getDeviceModelStateMap();
+            if (organizationPredictions.size() == numSlices) {
+                LOGGER.info(organizationPredictions.toString());
+                OrganizationFOGenerationEvent organizationFOGenerationEvent = new OrganizationFOGenerationEvent(
+                        this, "Organizational level FO for next slice", "",
+                        organizationPredictions, organization);
+                this.applicationEventPublisher.publishEvent(organizationFOGenerationEvent);
+            }
+             */
         }
     }
 }

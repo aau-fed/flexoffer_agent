@@ -50,7 +50,7 @@ public interface OnOffScheduleRepository extends JpaRepository<OnOffSchedule, Lo
      */
     @Query("SELECT s FROM OnOffSchedule s " +
             " WHERE s.flexOfferId = :flexOfferId")
-    public List<OnOffSchedule> findAllByFlexOfferId(@Param("flexOfferId") String flexOfferId);
+    List<OnOffSchedule> findAllByFlexOfferId(@Param("flexOfferId") String flexOfferId);
 
     /**
      * Invalidate schedule for FOs
@@ -58,7 +58,7 @@ public interface OnOffScheduleRepository extends JpaRepository<OnOffSchedule, Lo
     @Modifying
     @Query("update OnOffSchedule s SET s.isValid = 0" +
             " WHERE s.flexOfferId = :flexOfferId")
-    public void updateScheduleStatus(@Param("flexOfferId") String flexOfferId);
+    void updateScheduleStatus(@Param("flexOfferId") String flexOfferId);
 
     /**
      * Invalidate schedule for FOs
@@ -66,5 +66,5 @@ public interface OnOffScheduleRepository extends JpaRepository<OnOffSchedule, Lo
     @Modifying
     @Query("update OnOffSchedule s SET s.isValid = 0" +
             " WHERE s.onOffScheduleId = :onOffScheduleId")
-    public void updateScheduleStatus(@Param("onOffScheduleId") Long onOffScheduleId);
+    void updateScheduleStatus(@Param("onOffScheduleId") Long onOffScheduleId);
 }

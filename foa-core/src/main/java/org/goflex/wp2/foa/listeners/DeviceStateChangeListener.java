@@ -26,10 +26,10 @@ import java.util.Date;
 public class DeviceStateChangeListener implements ApplicationListener<DeviceStateChangeEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(DeviceStateChangeListener.class);
 
-    private ImplementationsHandler implementationsHandler;
-    private UserService userService;
-    private FOAProperties foaProperties;
-    private ControlDetailService controlDetailService;
+    private final ImplementationsHandler implementationsHandler;
+    private final UserService userService;
+    private final FOAProperties foaProperties;
+    private final ControlDetailService controlDetailService;
 
     @Autowired
     public DeviceStateChangeListener(ImplementationsHandler implementationsHandler,
@@ -50,7 +50,6 @@ public class DeviceStateChangeListener implements ApplicationListener<DeviceStat
             UserT user = this.userService.getUser(userName);
 
             DeviceParameters deviceParameters = new DeviceParameters();
-            //if (user.getOrganizationId() != 10004) { // 10004 is org_id for SWISS
             if (device.getPlugType() == PlugType.TPLink_HS110) {
                 deviceParameters.setAPIKey(user.getAPIKey() != null ? user.getAPIKey() : "");
                 deviceParameters.setCloudUserName(user.getTpLinkUserName());

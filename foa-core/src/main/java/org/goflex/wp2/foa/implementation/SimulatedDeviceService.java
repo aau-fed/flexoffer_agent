@@ -35,13 +35,17 @@ import org.goflex.wp2.core.models.*;
 import org.goflex.wp2.core.repository.OrganizationRepository;
 import org.goflex.wp2.foa.config.FOAProperties;
 import org.goflex.wp2.foa.controldetailmonitoring.ControlDetailService;
+import org.goflex.wp2.foa.events.UpdateDevicesEvent;
 import org.goflex.wp2.foa.interfaces.DeviceDetailService;
 import org.goflex.wp2.foa.interfaces.UserService;
 import org.goflex.wp2.foa.interfaces.xEmsServices;
+import org.goflex.wp2.foa.wrapper.DeviceDetailDataWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.*;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -62,30 +66,40 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created by bijay on 1/5/18.
  */
 @Service
-@Qualifier("forSimulator")
+@ConditionalOnProperty(value="fls.enabled", havingValue = "true")
 public class SimulatedDeviceService implements xEmsServices {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SimulatedDeviceService.class);
     private static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:00'Z'";
-    private static Map<String, Double> lastConsumption = new HashMap<>();
+    private static final Map<String, Double> lastConsumption = new HashMap<>();
+
     @Resource(name = "deviceLatestAggData")
     LinkedHashMap<String, Map<Date, Double>> deviceLatestAggData;
+
     @Resource(name = "defaultFlexibilitySettings")
     Map<Long, DeviceFlexibilityDetail> defaultFlexibilitySettings;
+
     @Resource(name = "orgAccEnergyData")
     LinkedHashMap<String, Map<Date, Double>> orgAccEnergyData;
+
     @Resource(name = "deviceLatestFO")
     ConcurrentHashMap<String, FlexOfferT> deviceLatestFO;
+
     @Resource(name = "tclDeviceFutureFOs")
     ConcurrentHashMap<String, Date> tclDeviceFutureFOs;
-    private RestTemplate restTemplate;
-    private FOAProperties foaProperties;
-    private UserService userService;
-    private DeviceDetailService deviceDetailService;
-    private DeviceFlexOfferGroup deviceFlexOfferGroup;
-    private OrganizationRepository organizationRepository;
-    private PasswordEncoder passwordEncoder;
-    private ControlDetailService controlDetailService;
+
+    @Resource(name = "poolDeviceDetail")
+    private ConcurrentHashMap<String, Map<String, PoolDeviceModel>> poolDeviceDetail;
+
+    private final RestTemplate restTemplate;
+    private final FOAProperties foaProperties;
+    private final UserService userService;
+    private final DeviceDetailService deviceDetailService;
+    private final DeviceFlexOfferGroup deviceFlexOfferGroup;
+    private final OrganizationRepository organizationRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final ControlDetailService controlDetailService;
+    private final ApplicationEventPublisher applicationEventPublisher;
     private Map<String, Map<String, Object>> deviceModels;
 
     @Autowired
@@ -96,6 +110,7 @@ public class SimulatedDeviceService implements xEmsServices {
                                   OrganizationRepository organizationRepository,
                                   RestTemplate restTemplate,
                                   PasswordEncoder passwordEncoder,
+                                  ApplicationEventPublisher applicationEventPublisher,
                                   ControlDetailService controlDetailService) {
         this.foaProperties = foaProperties;
         this.userService = userService;
@@ -105,6 +120,7 @@ public class SimulatedDeviceService implements xEmsServices {
         this.passwordEncoder = passwordEncoder;
         this.restTemplate = restTemplate;
         this.controlDetailService = controlDetailService;
+        this.applicationEventPublisher = applicationEventPublisher;
         prepareSimDeviceModelsMap();
     }
 
@@ -148,6 +164,26 @@ public class SimulatedDeviceService implements xEmsServices {
                     ResponseEntity<String> response = this.makeHttpRequest(url, HttpMethod.POST, null, null);
 
                     if (response.getStatusCode().value() == 200) {
+                        LOGGER.error("Turning off device: {} at power value {}", device.getDeviceId(), currentConsumption);
+
+                        try {
+                            // store the data point at which device turned off. store it for the next minute
+                            consumptionData.setTime(new Date(consumptionData.getTime().getTime() + 60000));
+                            List<DeviceDetailDataWrapper> deviceDetailDataList = new ArrayList<>();
+                            DeviceDetailDataWrapper deviceDetailDataWrapper = new DeviceDetailDataWrapper();
+                            deviceDetailDataWrapper.setUserName(user.getUserName());
+                            deviceDetailDataWrapper.setDeviceDetailId(device.getDeviceDetailId());
+                            deviceDetailDataWrapper.setDeviceDetailData(consumptionData);
+                            deviceDetailDataList.add(deviceDetailDataWrapper);
+                            // store the data point at which device turned off. store it for the next minute
+                            UpdateDevicesEvent updateDevicesEvent = new UpdateDevicesEvent(this,
+                                    String.format("Storing wet device turn off power value for device: {}", device.getDeviceId()),
+                                    deviceDetailDataList);
+                            this.applicationEventPublisher.publishEvent(updateDevicesEvent);
+                        } catch (Exception ex) {
+                            LOGGER.error(ex.getMessage());
+                        }
+
                         // make api call to generate flex offer
                         url = foaProperties.getFogConnectionConfig().getGenerateDeviceFOUrl() + "/" +
                                 device.getDeviceId() + "/" + organizationName;
@@ -680,6 +716,7 @@ public class SimulatedDeviceService implements xEmsServices {
             deviceDetail.setDeviceHierarchy(deviceHierarchy);
 
             DeviceFlexibilityDetail dfd = new DeviceFlexibilityDetail();
+            Organization org = organizationRepository.findByOrganizationId(user.getOrganizationId());
             Long organizationId = user.getOrganizationId();
             dfd.setDailyControlStart(defaultFlexibilitySettings.get(organizationId).getDailyControlStart());
             dfd.setDailyControlEnd(defaultFlexibilitySettings.get(organizationId).getDailyControlEnd());
@@ -694,6 +731,15 @@ public class SimulatedDeviceService implements xEmsServices {
             deviceDetail.setFlexible(false);
 
             userService.updateDeviceList(userName, deviceDetail);
+
+            // add device to in memory device models
+            String deviceId = userName + "@" + devicePlugId;
+            PoolDeviceModel deviceModel = new PoolDeviceModel(organizationId, deviceId, DeviceType.valueOf(alias).toString(),
+                    null,  20, 25,
+                    -1.0, null, 0, false, null,
+                    false, -1, -1, 22.5, null, null);
+            this.poolDeviceDetail.get(org.getOrganizationName()).put(deviceId, deviceModel);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -748,6 +794,10 @@ public class SimulatedDeviceService implements xEmsServices {
             JsonNode jsonNode = mapper.readTree(response.getBody());
 
             if (jsonNode.get("status").asText().equals("success")) {
+
+                //remove from device model map
+                poolDeviceDetail.remove(deviceID);
+
                 return "success";
             } else {
                 return "error";
@@ -894,7 +944,7 @@ public class SimulatedDeviceService implements xEmsServices {
             LOGGER.info("User: {} already exists", userName);
         } else {
             LOGGER.info("Creating user: " + userName);
-            String userPass = "";
+            String userPass = "password";
             UserT simUser = new UserT();
             simUser.setUserName(userName);
             simUser.setPassword(passwordEncoder.encode(userPass));

@@ -59,7 +59,7 @@ public class FmanUserService {
     public Map<String, String>[] getUsersFromFman(String organizationName) {
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + this.getUserbyUsername("").getAPIKey());
+        headers.set("Authorization", "Bearer " + this.getUserbyUsername("AAU").getAPIKey());
         HttpEntity<Map<String, String>> postEntity = new HttpEntity<>(headers);
         try {
             String registerUrl = foaProperties.getFmanConnectionConfig().getGetAllUsersURI() + "/" + organizationName;
@@ -77,7 +77,7 @@ public class FmanUserService {
     @Retryable(value={HttpServerErrorException.class}, maxAttempts=3, backoff=@Backoff(delay=100, maxDelay=500))
     public String _register(Map<String, String> userDetails) {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + this.getUserbyUsername("").getAPIKey());
+        headers.set("Authorization", "Bearer " + this.getUserbyUsername("AAU").getAPIKey());
         HttpEntity<Map<String, String>> postEntity = new HttpEntity<>(userDetails, headers);
         try {
             String registerUrl = foaProperties.getFmanConnectionConfig().getRegisterURI();
@@ -113,11 +113,10 @@ public class FmanUserService {
 
     public String _registerUsers(List<Map<String, String>> userDetails, String organizationName) {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + this.getUserbyUsername("").getAPIKey());
+        headers.set("Authorization", "Bearer " + this.getUserbyUsername("AAU").getAPIKey());
         HttpEntity<List<Map<String, String>>> postEntity = new HttpEntity<>(userDetails, headers);
         try {
             String registerUrl = foaProperties.getFmanConnectionConfig().getRegisterAllUsersURI() + "/" + organizationName;
-            ;
             ResponseEntity<String> response = restTemplate.postForEntity(registerUrl, postEntity, String.class);
             return response.getBody();
         } catch (Exception ex) {
@@ -131,8 +130,8 @@ public class FmanUserService {
 
 
         Map<String, String> credential = new HashMap<>();
-        credential.put("userName", "");
-        credential.put("password", "");
+        credential.put("userName", "AAU");
+        credential.put("password", "password");
 
         HttpEntity<Map<String, String>> entity = new HttpEntity<>(credential, null);
         try {
@@ -150,7 +149,7 @@ public class FmanUserService {
 
             }
             if (responseJsn.has("token")) {
-                FmanUser fmanUser = repo.findByUserName("");
+                FmanUser fmanUser = repo.findByUserName("AAU");
                 fmanUser.setAPIKey(responseJsn.get("token").textValue());
                 repo.save(fmanUser);
                 return responseJsn.get("token").textValue();
@@ -164,8 +163,8 @@ public class FmanUserService {
 
     public void createBrokerAccount() {
 
-        FmanUser fmanUser = new FmanUser("", 00000,
-                "", "", "testkey", true, new Date());
+        FmanUser fmanUser = new FmanUser("AAU", 00000,
+                "AAU", "password", "testkey", true, new Date());
         repo.save(fmanUser);
     }
 
@@ -178,7 +177,7 @@ public class FmanUserService {
         credential.put("role", "ROLE_PROSUMER");
         String fmanToken = this._register(credential);
         if (fmanToken != null) {
-            FmanUser fmanUser = new FmanUser("", organization.getOrganizationId(),
+            FmanUser fmanUser = new FmanUser("AAU", organization.getOrganizationId(),
                     organization.getOrganizationName(), "", "", true, new Date());
             repo.save(fmanUser);
         }
@@ -189,7 +188,7 @@ public class FmanUserService {
     @Scheduled(fixedRate = 3600000)
     public void registerUserToFman() {
 
-        FmanUser usr = repo.findByUserName("");
+        FmanUser usr = repo.findByUserName("AAU");
         //check if broker account exists
         if (usr == null) {
             //Create broker account on FOA, FMAN provides the credential
@@ -213,7 +212,7 @@ public class FmanUserService {
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-        httpHeaders.add("Authorization", "Bearer " + this.getUserbyUsername("").getAPIKey());
+        httpHeaders.add("Authorization", "Bearer " + this.getUserbyUsername("AAU").getAPIKey());
         HttpEntity<Object> entity = new HttpEntity<>(null, httpHeaders);
 
         return this.restTemplate.exchange(url, HttpMethod.GET, entity, Object.class);
@@ -228,7 +227,7 @@ public class FmanUserService {
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-        httpHeaders.add("Authorization", "Bearer " + this.getUserbyUsername("").getAPIKey());
+        httpHeaders.add("Authorization", "Bearer " + this.getUserbyUsername("AAU").getAPIKey());
         HttpEntity<Object> entity = new HttpEntity<>(null, httpHeaders);
 
         return this.restTemplate.exchange(url, HttpMethod.GET, entity, Object.class);

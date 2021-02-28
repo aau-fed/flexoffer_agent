@@ -42,14 +42,14 @@ public class FOGController {
     @Resource(name = "startGeneratingFo")
     private ConcurrentHashMap<String, Integer> startGeneratingFo;
 
-    private FlexOfferGenerator foGenerator;
-    private FOGenerationService generatorService;
-    private FOAService foaService;
-    private DeviceDetailService deviceDetailService;
-    private OrganizationRepository organizationRepository;
-    private DeviceFlexOfferGroup deviceFlexOfferGroup;
-    private ApplicationEventPublisher applicationEventPublisher;
-    private NonTCLWetDeviceForecastService nonTCLWetDeviceForecastService;
+    private final FlexOfferGenerator foGenerator;
+    private final FOGenerationService generatorService;
+    private final FOAService foaService;
+    private final DeviceDetailService deviceDetailService;
+    private final OrganizationRepository organizationRepository;
+    private final DeviceFlexOfferGroup deviceFlexOfferGroup;
+    private final ApplicationEventPublisher applicationEventPublisher;
+    private final NonTCLWetDeviceForecastService nonTCLWetDeviceForecastService;
 
 
     @Autowired

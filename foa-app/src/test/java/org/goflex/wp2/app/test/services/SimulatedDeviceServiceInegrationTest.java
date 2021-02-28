@@ -36,12 +36,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 @DisplayName("Integration test for SimulatedDeviceService class")
 class SimulatedDeviceServiceInegrationTest {
     private static final long MILLIS = 5000;
-    private String userName = "testUser";
-    private String loadType = "CoffeeMaker";
+    private final String userName = "testUser";
+    private final String loadType = "CoffeeMaker";
 
-    private SimulatedDeviceService simulatedDeviceService;
-    private DeviceDetailService deviceDetailService;
-    private UserService userService;
+    private final SimulatedDeviceService simulatedDeviceService;
+    private final DeviceDetailService deviceDetailService;
+    private final UserService userService;
     private DeviceDetail simDevice;
 
     @Autowired
@@ -211,7 +211,10 @@ class SimulatedDeviceServiceInegrationTest {
 
     @Test
     void testCreateSimulatedDevice_returnDeviceIdWhenValidRequest() {
-
+        // arrange
+        //String userName = simDevice.getUser().getUserName();
+        //String userName = "admin";
+        //String  loadType = "CoffeeMaker";
 
         // act
         String result = simulatedDeviceService.createSimulatedDevice(userName, loadType);
@@ -224,7 +227,7 @@ class SimulatedDeviceServiceInegrationTest {
     void testCreateSimulatedDevice_throwExceptionWhenInvalidDeviceType() {
         // arrange
         //String userName = simDevice.getUser().getUserName();
-        //String userName = "";
+        //String userName = "admin";
         String loadType = "NonExistentLoad";
 
         // act

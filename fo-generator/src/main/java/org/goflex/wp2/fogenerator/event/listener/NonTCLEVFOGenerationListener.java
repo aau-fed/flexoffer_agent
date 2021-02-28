@@ -50,9 +50,9 @@ import java.util.Date;
 public class NonTCLEVFOGenerationListener implements ApplicationListener<NonTCLEVFOGeneration> {
     private static final Logger LOGGER = LoggerFactory.getLogger(NonTCLEVFOGenerationListener.class);
 
-    private FlexOfferGenerator foGenerator;
-    private NonTCLEVForecastService nonTCLEVForecastService;
-    private ApplicationEventPublisher applicationEventPublisher;
+    private final FlexOfferGenerator foGenerator;
+    private final NonTCLEVForecastService nonTCLEVForecastService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Autowired
     public NonTCLEVFOGenerationListener(

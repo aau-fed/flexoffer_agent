@@ -99,7 +99,8 @@ class UserControllerTest {
         mockMvc.perform(post("/prosumer/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.toJson(user)))
-
+                //.content("{\"userName\": \"muhaftab\", \"password\": \"\"}"))
+                //.andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message", is("Username and Password fields can not be empty")));
     }

@@ -111,6 +111,8 @@ public interface DeviceDetailService {
 
     void deleteDeviceHierarchyByHierarchyName(String hierarchyName);
 
+    List<DeviceDetail> getDevicesByHierarchyId(long hierarchyId);
+
     List<DeviceHierarchy> getAllDeviceHierarchiesByUserId(long userId);
 
     DeviceHierarchy getDeviceHierarchyByUserId(long userId);

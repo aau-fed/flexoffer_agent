@@ -1,5 +1,6 @@
 package org.goflex.wp2.sysmonitor;
 
+import jdk.nashorn.internal.objects.annotations.Property;
 import org.goflex.wp2.core.entities.*;
 import org.goflex.wp2.core.models.DeviceDetail;
 import org.goflex.wp2.core.models.Organization;
@@ -46,15 +47,18 @@ public class SystemMonitorService {
     private static final long DEVICE_ALERT_INTERVAL = 60; // minutes
     private static final long FOA_ALERT_INTERVAL = 5; // minutes
 
-    private OrganizationRepository organizationRepository;
-    private UserService userService;
-    private DeviceDetailService deviceDetailService;
-    private DeviceStateService deviceStateService;
-    private TwilioSmsService smsService;
-    private EmailService emailService;
-    private ControlDetailService controlDetailService;
-    private ApplicationEventPublisher applicationEventPublisher;
-    private DeviceFlexOfferGroup deviceFlexOfferGroup;
+    private final OrganizationRepository organizationRepository;
+    private final UserService userService;
+    private final DeviceDetailService deviceDetailService;
+    private final DeviceStateService deviceStateService;
+    private final TwilioSmsService smsService;
+    private final EmailService emailService;
+    private final ControlDetailService controlDetailService;
+    private final ApplicationEventPublisher applicationEventPublisher;
+    private final DeviceFlexOfferGroup deviceFlexOfferGroup;
+
+    @Value("${foaAlerts.email}")
+    private String emailAddress;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -64,7 +68,7 @@ public class SystemMonitorService {
 
     private boolean foaAlive;
 
-    private Map<String, Date> lastAlertTime = new HashMap<>();
+    private final Map<String, Date> lastAlertTime = new HashMap<>();
 
     @Autowired
     public SystemMonitorService(
@@ -100,18 +104,16 @@ public class SystemMonitorService {
         }
 
         // FOA down. put all devices into their default state for all organizations with direct control mode = Active
-        organizationRepository.findAll().forEach(this::processOrganization);
-
+        organizationRepository.findAll()
+                .stream().filter(o -> o.getDirectControlMode() == OrganizationLoadControlState.Active)
+                .forEach(this::processOrganization);
     }
 
     private boolean isFoaAlive() {
         try {
 
             ResponseEntity<ResponseMessage> response = this.restTemplate.exchange(this.foaUrl, HttpMethod.GET, null, ResponseMessage.class);
-            if (response.getStatusCode() == HttpStatus.OK && response.getBody().getMessage().equals("ok")) {
-                return true;
-            }
-            return false;
+            return response.getStatusCode() == HttpStatus.OK && response.getBody().getMessage().equals("ok");
         } catch (Exception ex) {
             return false;
         }
@@ -135,8 +137,7 @@ public class SystemMonitorService {
         // this block of code deals with current on/off state only for flexible devices with control signal enabled
         DeviceState deviceState = device.getDeviceState();
         if (organization.getDirectControlMode() == OrganizationLoadControlState.Active
-                //&& (deviceState == DeviceState.Operating || deviceState == DeviceState.Idle)
-                && device.isFlexible()) {
+                && ( device.isFlexible() || organization.isPoolBasedControl() ) ) {
             boolean state = deviceState == DeviceState.Operating;
             if (this.deviceStateService.getDeviceCurrentState(device.getDeviceId()) == null) {
                 this.deviceStateService.storeDeviceCurrentState(device.getDeviceId(), state);
@@ -181,8 +182,7 @@ public class SystemMonitorService {
 
             String content = "FOA is currently down. All pending device schedules will not execute unless FOA is back online.";
             smsService.sendSms("admin", content); // for now send all alerts to admin user
-            emailService.sendSimpleMessage("muhaftabkhan@gmail.com", "Critical FOA Alert", content);
-            emailService.sendSimpleMessage("justnilotpal@gmail.com", "Critical FOA Alert", content);
+            emailService.sendSimpleMessage(emailAddress, "Critical FOA Alert", content);
 
             this.lastAlertTime.put("FOA", new Date());
         } catch (Exception ex) {
@@ -262,16 +262,13 @@ public class SystemMonitorService {
             //smsService.sendSms(user.getUserName(), content);
             //emailService.sendSimpleMessage(user.getEmail(), "FOA Device State Alert", content);
             //smsService.sendSms("admin", content); // for now send all alerts to admin user
-            //emailService.sendSimpleMessage("muhaftabkhan@gmail.com", subject, content);
-            emailService.sendSimpleMessage("justnilotpal@gmail.com", subject, content);
+            emailService.sendSimpleMessage(emailAddress, subject, content);
             LOGGER.warn(subject);
             LOGGER.warn(content);
-
 
             if (flexibilityGroupType == FlexibilityGroupType.ThermostaticControlLoad) {
                 this.forceTurnOnDevice(user, device);
             }
-
 
             this.lastAlertTime.put(device.getDeviceId(), new Date());
         } catch (Exception ex) {

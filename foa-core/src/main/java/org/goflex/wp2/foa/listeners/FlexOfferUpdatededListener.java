@@ -60,10 +60,10 @@ import java.util.List;
 public class FlexOfferUpdatededListener implements ApplicationListener<FlexOfferUpdatedEvent> {
     private static final Logger logger = LoggerFactory.getLogger(FlexOfferUpdatededListener.class);
 
-    private FOAProperties foaProperties;
-    private FOAService foaService;
-    private RestTemplate restTemplate;
-    private FMANAccessTokenService fmanAccessTokenService;
+    private final FOAProperties foaProperties;
+    private final FOAService foaService;
+    private final RestTemplate restTemplate;
+    private final FMANAccessTokenService fmanAccessTokenService;
 
     @Autowired
     public FlexOfferUpdatededListener(FOAProperties foaProperties,
@@ -81,7 +81,7 @@ public class FlexOfferUpdatededListener implements ApplicationListener<FlexOffer
         logger.info("Sending {} FlexOffer updates to FMAN...", event.getFlexOffers().size());
 
         HttpHeaders headers = new HttpHeaders();
-        String token = "Bearer " + fmanAccessTokenService.getToken("");
+        String token = "Bearer " + fmanAccessTokenService.getToken("AAU");
         if (!token.equals("Bearer ")) {
             headers.set("Authorization", token);
             HttpEntity<List<FlexOffer>> patchEntity = new HttpEntity<>(event.getFlexOffers(), headers);

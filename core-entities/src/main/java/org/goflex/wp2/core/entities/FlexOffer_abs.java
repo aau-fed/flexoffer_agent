@@ -197,11 +197,8 @@ public class FlexOffer_abs implements Serializable, Cloneable {
         } else if (!stateReason.equals(other.stateReason))
             return false;
         if (totalEnergyConstraint == null) {
-            if (other.totalEnergyConstraint != null)
-                return false;
-        } else if (!totalEnergyConstraint.equals(other.totalEnergyConstraint))
-            return false;
-        return true;
+            return other.totalEnergyConstraint == null;
+        } else return totalEnergyConstraint.equals(other.totalEnergyConstraint);
     }
 
     /**

@@ -31,6 +31,7 @@ package org.goflex.wp2.fogenerator.interfaces;
 import org.goflex.wp2.core.entities.FlexOffer;
 import org.goflex.wp2.core.models.DeviceDetail;
 import org.goflex.wp2.core.models.Organization;
+import org.goflex.wp2.core.models.PoolDeviceModel;
 import org.goflex.wp2.foa.prediction.OrganizationPrediction;
 import org.goflex.wp2.fogenerator.model.PredictionTs;
 
@@ -76,4 +77,13 @@ public interface FlexOfferGenerator {
     boolean shouldGenerateFO(String dt, String prevDt, double currentHour, DeviceDetail deviceDetail);
 
     FlexOffer createOrganizationFlexOffer(Organization organization, List<OrganizationPrediction> organizationPrediction);
+
+    FlexOffer generatePoolFO(Organization organization,
+                             List<OrganizationPrediction> organizationPrediction, List<PoolDeviceModel> deviceModel,
+                             boolean isInCoolingPeriod);
+
+    FlexOffer createPoolFlexOffer(Organization organization,
+                                  List<OrganizationPrediction> organizationPrediction,
+                                  List<PoolDeviceModel> deviceModel, Double baseEnergy,
+                                  Double flexEnergy);
 }

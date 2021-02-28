@@ -142,9 +142,7 @@ public class TariffConstraintProfileInea implements Serializable {
         TariffConstraintProfileInea other = (TariffConstraintProfileInea) obj;
         if (!Arrays.equals(tariffSlices, other.tariffSlices))
             return false;
-        if (startInterval != other.startInterval)
-            return false;
-        return true;
+        return startInterval == other.startInterval;
     }
 
 

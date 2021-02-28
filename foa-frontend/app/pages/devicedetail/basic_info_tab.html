@@ -1,0 +1,147 @@
+<div class="col-md-12">
+
+    <div class="col-md-5">
+        <h3 translate>
+            DEVICEDETAIL_TABLE_PROPERTIES
+        </h3>
+        <div class="table-responsive printContent" style="font-size: smaller; margin: 0;">
+            <table class="table table-hover">
+                <tbody>
+                    <tr>
+                        <td>
+                            {{'DEVICEDETAIL_TABLE_ID' | translate}}
+                        </td>
+                        <td style="font-size: xx-small;">
+                            {{deviceDetail.deviceId.split('@')[1]}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {{'DEVICEDETAIL_TABLE_USER' | translate}}
+                        </td>
+                        <td>
+                            {{deviceDetail.deviceId.split('@')[0]}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {{'DEVICEDETAIL_TABLE_ALIAS' | translate}}
+                        </td>
+                        <td>
+                            {{deviceDetail.alias}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {{'DEVICEDETAIL_TABLE_DEVICE_TYPE' | translate}}
+                        </td>
+                        <td>
+                            {{deviceDetail.deviceType}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {{'DEVICEDETAIL_TABLE_PLUG_TYPE' | translate}}
+                        </td>
+                        <td>
+                            {{deviceDetail.plugType}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {{'DEVICEDETAIL_TABLE_GROUP' | translate}}
+                        </td>
+                        <td>
+                            {{deviceDetail.deviceHierarchy.hierarchyName}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {{'DEVICEDETAIL_TABLE_DEFAULT_STATE' | translate}}
+                        </td>
+                        <td>
+                            {{deviceDetail.defaultState}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {{'DEVICEDETAIL_TABLE_TIMEZONE' | translate}}
+                        </td>
+                        <td>
+                            {{deviceDetail.timeZone}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {{'DEVICEDETAIL_TABLE_LOC' | translate}}
+                        </td>
+                        <td>
+                            {{deviceDetail.changedByUser ? 'VALUE_TRUE' : 'VALUE_FALSE' | translate}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {{'DEVICEDETAIL_TABLE_FLEXIBLE' | translate}}
+                        </td>
+                        <td>
+                            {{deviceDetail.flexible ? 'VALUE_TRUE' : 'VALUE_FALSE' | translate}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {{'DEVICEDETAIL_TABLE_REG_DATE' | translate}}
+                        </td>
+                        <td>
+                            {{deviceDetail.registrationDate}}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- <div class="col-md-offset-1 col-md-3"> -->
+    <div class="col-md-3">
+        <h3 translate>
+            DEVICEDETAIL_HOUSEHOLD
+        </h3>
+
+        <h5>
+            <!-- <select ng-disabled="role != 'ROLE_ADMIN'" id="group-select" class="form-control" ng-model="hierarchyName" -->
+            <select id="group-select" class="form-control" ng-model="hierarchyName"
+                ng-options="groupName for groupName in groupNames" ng-click="changeDeviceGroup(hierarchyName)">
+            </select>
+        </h5>
+
+        <br><br><br>
+
+        <!-- Power Control Button -->
+        <!-- <h5 style="text-align:center;" title="{{'TOOLTIP_POWER_SWITCH' | translate}}">
+            <label class="switch {{ (deviceDetail.deviceState == 'Disconnected') ? 'disabled' : 'ss'}}">
+                <input type="checkbox" ng-model="deviceStatus" ng-change="toggleDevicePower()" ng-disabled="(deviceDetail.deviceState == 'Disconnected')" />
+                <span class="slider round"></span>
+            </label>
+            <div style="font-weight: 600;">
+                {{'DEVICEDETAIL_DEVICE_POWER' | translate}}
+            </div>
+        </h5> -->
+
+    </div>
+
+
+    <div class="col-md-4">
+        <h3 translate>
+            DEVICEDETAIL_MAP
+        </h3>
+
+        <div class="form-group" title="{{'TOOLTIP_DEVICE_LOCATION' | translate}}">
+            <br>
+            <label for="address"><span translate>DEVICEDETAIL_DEVICE_LOCATION</label>
+            <input ng-model="vm1.address.formattedAddress" ng-autocomplete details="vm1.address" id="device-address"
+                name="address" type="text" ng-change="deviceLocationChanged()" />
+        </div>
+
+        <div id="device-map"></div>
+
+    </div>
+</div>

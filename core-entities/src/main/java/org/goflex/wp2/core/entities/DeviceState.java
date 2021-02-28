@@ -41,7 +41,7 @@ public enum DeviceState {
     Disconnected(2),
     Unknown(3);
 
-    private int value;
+    private final int value;
 
     DeviceState(int value) {
         this.value = value;

@@ -15,8 +15,8 @@ import java.util.stream.Collectors;
 @Service
 public class ConsumptionTsServiceImpl implements ConsumptionTsService {
 
-    private ConsumptionTsRepository consumptionTsRepository;
-    private DeviceDataSupplRepository deviceDataSupplRepository;
+    private final ConsumptionTsRepository consumptionTsRepository;
+    private final DeviceDataSupplRepository deviceDataSupplRepository;
 
     @Autowired
     public ConsumptionTsServiceImpl(

@@ -176,11 +176,8 @@ public class TariffSlice implements Serializable {
         if (duration != other.duration)
             return false;
         if (tariffConstraint == null) {
-            if (other.tariffConstraint != null)
-                return false;
-        } else if (!tariffConstraint.equals(other.tariffConstraint))
-            return false;
-        return true;
+            return other.tariffConstraint == null;
+        } else return tariffConstraint.equals(other.tariffConstraint);
     }
 
 }

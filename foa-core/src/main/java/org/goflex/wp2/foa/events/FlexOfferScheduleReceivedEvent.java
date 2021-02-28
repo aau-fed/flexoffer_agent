@@ -29,6 +29,7 @@ package org.goflex.wp2.foa.events;
 
 import org.goflex.wp2.core.entities.FlexOffer;
 import org.goflex.wp2.core.entities.FlexOfferSchedule;
+import org.goflex.wp2.core.models.Organization;
 import org.springframework.context.ApplicationEvent;
 
 /**
@@ -41,7 +42,8 @@ public class FlexOfferScheduleReceivedEvent extends ApplicationEvent {
     private Boolean defaultSchedule;
 
 
-    public FlexOfferScheduleReceivedEvent(Object source, String eventType, FlexOffer FO, FlexOfferSchedule schedule, Boolean defSchedule) {
+    public FlexOfferScheduleReceivedEvent(Object source, String eventType, FlexOffer FO, FlexOfferSchedule schedule,
+                                          Boolean defSchedule) {
         super(source);
         eventName = eventType;
         newSchedule = schedule;
@@ -50,11 +52,11 @@ public class FlexOfferScheduleReceivedEvent extends ApplicationEvent {
     }
 
 
-    public String getEvent() {
+    public String getEventName() {
         return eventName;
     }
 
-    public void setEvent(String event) {
+    public void setEventName(String event) {
         this.eventName = event;
     }
 

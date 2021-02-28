@@ -29,10 +29,11 @@
 
 package org.goflex.wp2.app.controllers;
 
-import org.goflex.wp2.core.entities.FlexOffer;
 import org.goflex.wp2.core.entities.FlexOfferState;
 import org.goflex.wp2.core.models.FlexOfferT;
+import org.goflex.wp2.core.models.PoolDeviceModel;
 import org.goflex.wp2.core.wrappers.GetFOControllerWrapper;
+import org.goflex.wp2.foa.wrapper.PoolFOWrapper;
 import org.goflex.wp2.foa.interfaces.FOAService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,12 +46,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /* This is a native built-in RESTful Flex-Offer generator */
 @RestController
@@ -70,6 +71,9 @@ public class FOARestController implements ApplicationContextAware {
     private ApplicationEventPublisher applicationEventPublisher;
     @Autowired
     private FOAService foaService;
+
+    @Resource(name = "poolDeviceDetail")
+    private ConcurrentHashMap<String, Map<String, PoolDeviceModel>> poolDeviceDetail;
 
     @RequestMapping(value = "/uriForTest", method = RequestMethod.GET)
     public ResponseEntity<String> getTestString() {
@@ -121,6 +125,20 @@ public class FOARestController implements ApplicationContextAware {
     @RequestMapping(value = "/getAllFlexOffer", method = RequestMethod.GET)
     public ResponseEntity<List<FlexOfferT>> retrieveActiveFlexOffers(@RequestHeader(value = "Authorization") String authorization) {
         return new ResponseEntity<>(foaService.getAllFO(), HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/organization/flexOffers/{orgName}", method = RequestMethod.POST)
+    public ResponseEntity<?> getOrgFlexOffers(@RequestBody PoolFOWrapper poolFOWrapper,
+                                              @PathVariable("orgName") String orgName) throws Exception {
+
+        //swissDeviceDetail
+        UUID foId = poolFOWrapper.getFoId();
+        poolFOWrapper.getDeviceIds().forEach(deviceId ->{
+            poolDeviceDetail.get(orgName).get(deviceId).setLastFOGenerated(new Date());
+            poolDeviceDetail.get(orgName).get(deviceId).setLastFOId(foId);
+            poolDeviceDetail.get(orgName).get(deviceId).setHasActiveFO(true);
+        });
+        return new ResponseEntity<>("Ok", HttpStatus.OK);
     }
 
 }

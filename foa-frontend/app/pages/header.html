@@ -1,0 +1,54 @@
+<div class="container-fluid hidden-print" ng-controller="HeaderCtrl">
+    <div class="col-md-12 row">
+
+        <div class="col-md-6">
+            <a href="#!/dashboard" class="logo"><img src="img/Logo_goflex_project.png" /></a>
+            <a href="#!/dashboard" class="logo"><img src="img/eu-logo.png" /></a>
+        </div>
+
+
+        <div class="col-md-2">
+            <div class="header-icons pull-right">
+                <!-- <div style="font-size: smaller; text-align: center; font-weight: bold;">{{'HEADER_ALERTS' | translate}}</div> -->
+                <div style="font-size: smaller; font-weight: bold;">{{'HEADER_ALERTS' | translate}}</div>
+                <a href="javascript:void(0);" class="msg-notify-link"  ng-click="markAllMessagesAsRead()">
+                    <i style="padding:0;" class="icon ion-ios-email-outline"></i><span class="notification" id="messageNotification"
+                        ng-if="messageCount">{{messageCount}}</span>
+                </a>
+                <ul class="messages text-left">
+                    <li ng-repeat="msg in unreadMessages">
+                        <a href="javascript:void(0);">{{msg.message}}</a>
+                        <br>
+                        <small>{{msg.messageDate | date:'yyyy-MM-dd HH:mm:ss'}}</small>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+
+
+        <div class="col-md-1">
+            <!-- <div class="pull-right"> -->
+                <p style="font-size: smaller; font-weight: bold;">{{'CHANGE_LANGUAGE' | translate}}:</p>
+                <select style="height: 30px; margin-bottom: 10px;" class="form-control" ng-model="lng"
+                    ng-change="changeLanguage()">
+                    <option value="en" translate>BUTTON_LANG_EN</option>
+                    <option value="de" translate>BUTTON_LANG_DE</option>
+                </select>
+            <!-- </div> -->
+        </div>
+
+        <div class="col-md-3 pull-right">
+            <div class="pull-right">
+                <div class="user-image">
+                    <a href="#!/profile/{{userName()}}">
+                        <img ng-bind="pic" src="{{userImg()}}" class="img-circle img-thumbnail" alt="user image">
+                        <span style="word-wrap: break-word; font-size: smaller;" ng-bind="userName()"></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>

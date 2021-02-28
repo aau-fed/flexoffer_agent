@@ -78,7 +78,7 @@ public class SendMeasurementToFMAN {
             logger.info("Sending measurement data to FMAN");
             HttpHeaders headers = new HttpHeaders();
             String token = "Bearer ";
-            FmanUser usr = fmanUserService.getUserbyUsername("");
+            FmanUser usr = fmanUserService.getUserbyUsername("AAU");
             if (usr != null && !usr.getAPIKey().equals("")) {
                 token = token.concat(usr.getAPIKey());
                 if (!token.equals("Bearer ")) {
@@ -93,7 +93,7 @@ public class SendMeasurementToFMAN {
                             List<MeasurementPayload> measurementPayload = new ArrayList<>();
                             for (ConsumptionTuple ct : tuple.getValue().getOperationPower()) {
                                 if (ct != null) { // TODO: check why there is null value
-                                    measurementPayload.add(new MeasurementPayload("", ThreadLocalRandom.current().nextLong(1000000),
+                                    measurementPayload.add(new MeasurementPayload("sysadmin", ThreadLocalRandom.current().nextLong(1000000),
                                             ct.getTimestamp(), ct.getValue()));
                                 }
                             }

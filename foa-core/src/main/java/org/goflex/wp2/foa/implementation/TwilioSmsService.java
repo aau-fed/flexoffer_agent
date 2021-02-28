@@ -35,11 +35,7 @@ public class TwilioSmsService implements SmsService {
     private UserService userService;
 
     private boolean isValidNumber(String phoneNumber) {
-        if (StringUtils.isEmpty(phoneNumber)) {
-            return false;
-        }
-
-        return true;
+        return !StringUtils.isEmpty(phoneNumber);
     }
 
     @Async

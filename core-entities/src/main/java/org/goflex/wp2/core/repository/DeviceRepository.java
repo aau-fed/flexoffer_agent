@@ -145,6 +145,8 @@ public interface DeviceRepository extends JpaRepository<DeviceDetail, Long> {
 
     void deleteAllByDeviceHierarchy_HierarchyId(@Param("hierarchyId") long hierarchyId);
 
+    List<DeviceDetail> findAllByDeviceHierarchy_HierarchyId(@Param("hierarchyId") long hierarchyId);
+
     @Query("SELECT d FROM UserT t " +
             "inner join t.deviceDetail d WHERE t.userId = :userId " +
             "and d.deviceType in " +

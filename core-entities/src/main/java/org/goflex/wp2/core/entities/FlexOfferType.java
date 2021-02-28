@@ -40,7 +40,7 @@ public enum FlexOfferType {
     limitTotalConstraint(1),
     undefined(2);
 
-    private int value;
+    private final int value;
 
     FlexOfferType(int value) {
         this.value = value;

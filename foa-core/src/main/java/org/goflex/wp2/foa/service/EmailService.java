@@ -19,7 +19,7 @@ public class EmailService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EmailService.class);
 
-    private JavaMailSender emailSender;
+    private final JavaMailSender emailSender;
 
 
     @Autowired

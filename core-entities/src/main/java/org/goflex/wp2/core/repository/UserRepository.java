@@ -79,34 +79,34 @@ public interface UserRepository extends JpaRepository<UserT, Long> {
      * Find All user in the memory/database with associated devices
      */
     @Query("SELECT u FROM UserT u join fetch u.deviceDetail")
-    public Set<UserT> findAllFetchDevice();
+    Set<UserT> findAllFetchDevice();
 
     /**
      * Find  user by Username
      */
-    public UserT findByUserName(String userName);
+    UserT findByUserName(String userName);
 
-    public UserT findByUserNameAndEnabled(String userName, boolean enabled);
+    UserT findByUserNameAndEnabled(String userName, boolean enabled);
 
-    public UserT findByEmail(String email);
+    UserT findByEmail(String email);
 
     /**
      * Find  user by Username and Password
      */
     @Query("SELECT t FROM UserT t WHERE t.userName = :userName AND t.Password = :Password")
-    public UserT findByUserNameAndPassword(@Param("userName") String userName,
-                                           @Param("Password") String password);
+    UserT findByUserNameAndPassword(@Param("userName") String userName,
+                                    @Param("Password") String password);
 
     /**
      * Find  user by tplinkuser name
      */
     //@Query("SELECT t FROM UserT t WHERE t.tpLinkUserName = :tpLinkUserName")
-    public UserT findByTpLinkUserName(String tpLinkUserName);
+    UserT findByTpLinkUserName(String tpLinkUserName);
 
 
     @Query("SELECT t.userName FROM UserT t " +
             "WHERE t.organizationId = :organizationId")
-    public List<String> getAllUserName(@Param("organizationId") long organizationId);
+    List<String> getAllUserName(@Param("organizationId") long organizationId);
 
 
     /**
@@ -123,7 +123,7 @@ public interface UserRepository extends JpaRepository<UserT, Long> {
     @Query("SELECT d FROM UserT t " +
             "inner join t.deviceDetail d " +
             "WHERE d.deviceDetailId = :deviceDetailId")
-    public DeviceDetail findByDeviceDetailDeviceDetailId(
+    DeviceDetail findByDeviceDetailDeviceDetailId(
             @Param("deviceDetailId") long deviceDetailId);
 
     /**
@@ -132,7 +132,7 @@ public interface UserRepository extends JpaRepository<UserT, Long> {
     @Query("SELECT d FROM UserT t " +
             "inner join t.deviceDetail d " +
             "WHERE d.deviceId = :deviceId")
-    public DeviceDetail findByDeviceDetailDeviceId(@Param("deviceId") String deviceId);
+    DeviceDetail findByDeviceDetailDeviceId(@Param("deviceId") String deviceId);
 
     /**
      * find device list for user
@@ -140,7 +140,7 @@ public interface UserRepository extends JpaRepository<UserT, Long> {
     @Query("SELECT d FROM UserT t " +
             "inner join t.deviceDetail d " +
             "WHERE t.userName = :userName")
-    public List<DeviceDetail> findDeviceList(@Param("userName") String userName);
+    List<DeviceDetail> findDeviceList(@Param("userName") String userName);
 
     /**
      * find device list for organizationId
@@ -149,7 +149,7 @@ public interface UserRepository extends JpaRepository<UserT, Long> {
             "inner join t.deviceDetail d " +
             "WHERE t.organizationId = :organizationId")
            // "WHERE t.organizationId = :organizationId and d.deviceState <> 3")
-    public List<DeviceDetail> findByOrganizationId(@Param("organizationId") long organizationId);
+    List<DeviceDetail> findByOrganizationId(@Param("organizationId") long organizationId);
 
-    public void deleteUserTByUserName(String userName);
+    void deleteUserTByUserName(String userName);
 }

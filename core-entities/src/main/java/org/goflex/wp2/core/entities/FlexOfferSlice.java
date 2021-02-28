@@ -262,11 +262,8 @@ public class FlexOfferSlice implements Serializable {
         } else if (!energyConstraintList.equals(other.energyConstraintList))
             return false;
         if (tariffConstraint == null) {
-            if (other.tariffConstraint != null)
-                return false;
-        } else if (!tariffConstraint.equals(other.tariffConstraint))
-            return false;
-        return true;
+            return other.tariffConstraint == null;
+        } else return tariffConstraint.equals(other.tariffConstraint);
     }
 
 

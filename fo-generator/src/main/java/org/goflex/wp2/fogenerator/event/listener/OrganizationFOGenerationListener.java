@@ -42,7 +42,7 @@ import java.util.Date;
 public class OrganizationFOGenerationListener implements ApplicationListener<OrganizationFOGenerationEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(OrganizationFOGenerationListener.class);
 
-    private FlexOfferGenerator foGenerator;
+    private final FlexOfferGenerator foGenerator;
 
     @Autowired
     public OrganizationFOGenerationListener(FlexOfferGenerator foGenerator) {

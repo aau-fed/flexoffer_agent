@@ -23,8 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class UpdateDevicesEventListener implements ApplicationListener<UpdateDevicesEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(UpdateDevicesEventListener.class);
 
-    private UserService userService;
-    private DeviceDetailService deviceDetailService;
+    private final UserService userService;
+    private final DeviceDetailService deviceDetailService;
 
     @Autowired
     public UpdateDevicesEventListener(UserService userService,

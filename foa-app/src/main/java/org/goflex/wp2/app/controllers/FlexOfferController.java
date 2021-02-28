@@ -70,11 +70,11 @@ public class FlexOfferController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FlexOfferController.class);
 
-    private UserService userService;
-    private ContractService contractService;
-    private ApplicationEventPublisher applicationEventPublisher;
-    private FOAService foaService;
-    private OrganizationRepository organizationRepository;
+    private final UserService userService;
+    private final ContractService contractService;
+    private final ApplicationEventPublisher applicationEventPublisher;
+    private final FOAService foaService;
+    private final OrganizationRepository organizationRepository;
 
     @Autowired
     public FlexOfferController(UserService userService,
@@ -102,6 +102,8 @@ public class FlexOfferController {
 
         return new FlexOfferConstraint(min, max);
     }
+
+
 
     private ResponseEntity<ResponseMessage> errorResponse(String msg, HttpStatus status) {
         ResponseMessage responseMessage = new ResponseMessage();

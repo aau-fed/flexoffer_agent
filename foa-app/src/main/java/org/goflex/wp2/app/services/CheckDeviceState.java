@@ -28,12 +28,10 @@
 package org.goflex.wp2.app.services;
 
 import org.goflex.wp2.app.common.AppRuntimeConfig;
-import org.goflex.wp2.core.entities.DeviceDetailData;
-import org.goflex.wp2.core.entities.DeviceParameters;
-import org.goflex.wp2.core.entities.DeviceState;
-import org.goflex.wp2.core.entities.DeviceType;
+import org.goflex.wp2.core.entities.*;
 import org.goflex.wp2.core.models.DeviceDetail;
 import org.goflex.wp2.core.models.Organization;
+import org.goflex.wp2.core.models.PoolDeviceModel;
 import org.goflex.wp2.core.models.UserT;
 import org.goflex.wp2.core.repository.DeviceRepository;
 import org.goflex.wp2.core.repository.OrganizationRepository;
@@ -43,6 +41,7 @@ import org.goflex.wp2.foa.events.UpdateDevicesEvent;
 import org.goflex.wp2.foa.implementation.ImplementationsHandler;
 import org.goflex.wp2.foa.interfaces.DeviceDetailService;
 import org.goflex.wp2.foa.interfaces.UserService;
+import org.goflex.wp2.foa.listeners.FlexOfferScheduleReceivedListener;
 import org.goflex.wp2.foa.wrapper.DeviceDetailDataWrapper;
 import org.hibernate.Hibernate;
 import org.slf4j.Logger;
@@ -76,6 +75,11 @@ public class CheckDeviceState {
     @Resource(name = "devicePendingControlSignals")
     ConcurrentHashMap<String, Integer> devicePendingControlSignals;
 
+    @Resource(name = "poolDeviceDetail")
+    private ConcurrentHashMap<String, Map<String, PoolDeviceModel>> poolDeviceDetail;
+
+    private List<DeviceDetailDataWrapper> deviceDetailDataList;
+
     private UserService userService;
     private OrganizationRepository organizationRepository;
     private DeviceDetailService deviceDetailService;
@@ -84,7 +88,8 @@ public class CheckDeviceState {
     private AppRuntimeConfig appRuntimeConfig;
     private ImplementationsHandler implementationsHandler;
     private ApplicationEventPublisher applicationEventPublisher;
-    private List<DeviceDetailDataWrapper> deviceDetailDataList;
+    private FlexOfferScheduleReceivedListener flexOfferScheduleReceivedListener;
+
 
     public CheckDeviceState() {
     }
@@ -97,7 +102,8 @@ public class CheckDeviceState {
                             DeviceRepository deviceRepository,
                             AppRuntimeConfig appRuntimeConfig,
                             ImplementationsHandler implementationsHandler,
-                            ApplicationEventPublisher applicationEventPublisher) {
+                            ApplicationEventPublisher applicationEventPublisher,
+                            FlexOfferScheduleReceivedListener flexOfferScheduleReceivedListener) {
         this.userService = userService;
         this.foaProperties = foaProperties;
         this.deviceDetailService = deviceDetailService;
@@ -106,19 +112,23 @@ public class CheckDeviceState {
         this.appRuntimeConfig = appRuntimeConfig;
         this.implementationsHandler = implementationsHandler;
         this.applicationEventPublisher = applicationEventPublisher;
+        this.flexOfferScheduleReceivedListener = flexOfferScheduleReceivedListener;
     }
 
 
     //@Scheduled(fixedRate = 60000)
     // second, minute, hour, day of month, month, day of week.
     //e.g. "0 * * * * MON-FRI" means once per minute on weekdays
+    //this schedule updates the device state and collect consumption data
     @Scheduled(cron = "0 * * * * *")
     public void updateDevices() {
         if (this.appRuntimeConfig.isMonitorPlugStatus()) {
             this.deviceDetailDataList = new ArrayList<>();
             Date startTime = new Date();
             LOGGER.info("Updating devices state for all users");
-            organizationRepository.findAll().forEach(this::processForOrganization);
+            organizationRepository.findAll()
+                    .stream().filter(o -> o.getDirectControlMode() != OrganizationLoadControlState.Stopped)
+                    .forEach(this::processForOrganization);
             LOGGER.debug("Fetched device data and status update for all users.");
             UpdateDevicesEvent updateDevicesEvent = new UpdateDevicesEvent(
                     this, "Persist state and consumption data update for all devices",
@@ -145,8 +155,11 @@ public class CheckDeviceState {
                     DeviceDetailDataWrapper deviceDetailDataWrapper = new DeviceDetailDataWrapper();
                     deviceDetailDataWrapper.setUserName(user.getUserName());
                     deviceDetailDataWrapper.setDeviceDetailId(deviceDetail.getDeviceDetailId());
-                    deviceDetailDataWrapper.setDeviceDetailData(this.processDevice(user, organization, deviceDetail));
-                    this.deviceDetailDataList.add(deviceDetailDataWrapper);
+                    DeviceDetailData data = this.processDevice(user, organization, deviceDetail);
+                    if (data != null) {
+                        deviceDetailDataWrapper.setDeviceDetailData(data);
+                        this.deviceDetailDataList.add(deviceDetailDataWrapper);
+                    }
                 });
     }
 
@@ -162,18 +175,21 @@ public class CheckDeviceState {
                 .updateDeviceState(user, organization.getOrganizationName(), deviceDetail, deviceParameters);
     }
 
-
+    //This schedule is to monitor wet device state every 13 seconds,
+    // if device is turnedon the loop should stop the device and genarate a flexoffer
     @Scheduled(fixedRate = 13000)
     public void checkWetAndBatteryDevices() {
         if (this.appRuntimeConfig.isMonitorPlugStatus()) {
             LOGGER.debug("Monitoring wet and battery devices state for all users");
-            organizationRepository.findAll().forEach(this::processWetAndBatteryDevicesForOrganization);
+            organizationRepository.findAll()
+                    .stream().filter(o -> o.getDirectControlMode() != OrganizationLoadControlState.Stopped)
+                    .forEach(this::processWetAndBatteryDevicesForOrganization);
             LOGGER.debug("Wet and battery devices monitoring completed for all users");
         }
     }
 
     private void processWetAndBatteryDevicesForOrganization(Organization organization) {
-        LOGGER.debug("monitoring wet and battery devices for organization: " + organization.getOrganizationName());
+        LOGGER.info("monitoring wet and battery devices for organization: " + organization.getOrganizationName());
         List<UserT> users = userService.getActiveUsersForOrganization(organization.getOrganizationId());
         Hibernate.initialize(users);
         users.forEach(user -> processWetAndBatteryDevicesForUser(user, organization));
@@ -192,18 +208,22 @@ public class CheckDeviceState {
                                 deviceParameters));
     }
 
-
+    //This schedule is to monitor wet device state every 13 seconds,
+    // if device is turned on the loop should stop the device and generate a flexoffer
+    //TODO: get data from database as its already extracted
     @Scheduled(fixedRate = 60000)
     public void checkTCLDevices() {
         if (this.appRuntimeConfig.isMonitorPlugStatus()) {
             LOGGER.debug("Monitoring TCL devices state for all users");
-            organizationRepository.findAll().forEach(this::processTCLDevicesForOrganization);
+            organizationRepository.findAll().stream()
+                    .filter(org -> org.getDirectControlMode() != OrganizationLoadControlState.Stopped && !org.isPoolBasedControl())
+                    .collect(Collectors.toList()) .forEach(this::processTCLDevicesForOrganization);
             LOGGER.debug("TCL devices monitoring completed for all users");
         }
     }
 
     private void processTCLDevicesForOrganization(Organization organization) {
-        LOGGER.debug("Monitoring TCL devices for organization: " + organization.getOrganizationName());
+        LOGGER.info("Monitoring TCL devices for FO generation for organization : " + organization.getOrganizationName());
         List<UserT> users = userService.getActiveUsersForOrganization(organization.getOrganizationId());
         Hibernate.initialize(users);
         users.forEach(user -> processTCLDevicesForUser(user, organization));
@@ -215,13 +235,22 @@ public class CheckDeviceState {
         deviceParameters.setCloudUserName(user.getTpLinkUserName());
         deviceParameters.setCloudPassword(user.getTpLinkPassword());
         deviceParameters.setCloudAPIUrl(foaProperties.getCloudAPIUrl());
-        deviceRepository.findTCLDevicesByUserId(user.getId()).stream()
-                .filter(deviceDetail -> deviceDetail.getDeviceType() != null && deviceDetail.isFlexible())
-                .forEach(deviceDetail -> implementationsHandler.get(deviceDetail.getPlugType())
-                        .processTCLDevice(user, organization.getOrganizationName(), deviceDetail, deviceParameters));
+//        deviceRepository.findTCLDevicesByUserId(user.getId()).stream()
+//                .filter(deviceDetail -> deviceDetail.getDeviceType() != null && deviceDetail.isFlexible())
+//                .forEach(deviceDetail -> implementationsHandler.get(deviceDetail.getPlugType())
+//                        .processTCLDevice(user, organization.getOrganizationName(), deviceDetail, deviceParameters));
+
+        for(DeviceDetail deviceDetail: deviceRepository.findTCLDevicesByUserId(user.getId())){
+            if(deviceDetail.getDeviceType() != null && deviceDetail.isFlexible()){
+                LOGGER.info("processing device " + deviceDetail.getDeviceId());
+                implementationsHandler.get(deviceDetail.getPlugType()).
+                        processTCLDevice(user, organization.getOrganizationName(), deviceDetail, deviceParameters);
+            }
+        }
     }
 
-    @Scheduled(cron = "0 0 4 25/5 * ?")
+    // TODO: no need for sww, need better implementation for generalization
+    //@Scheduled(cron = "0 0 4 25/5 * ?")
     public void updatePlugTimezone() {
         DeviceParameters deviceParameters = new DeviceParameters();
 
@@ -263,7 +292,7 @@ public class CheckDeviceState {
                                 int offsetMins = Math.floorMod(offset, 60);
 
 
-                                if (time_zone.substring(0, 1).equals("+")) {
+                                if (time_zone.charAt(0) == '+') {
                                     if ((minutes + offsetMins) > 60) {
                                         offsetHrs = offsetHrs + 1;
                                         offsetMins = Math.floorMod((minutes + offsetMins), 60);
@@ -276,7 +305,7 @@ public class CheckDeviceState {
                                         time_zone = "+0" + (offsetHrs + hours) + ":" + offsetMins;
                                     }
 
-                                } else if (time_zone.substring(0, 1).equals("-")) {
+                                } else if (time_zone.charAt(0) == '-') {
                                     if ((minutes - offsetMins) < 0) {
                                         offsetHrs = offsetHrs - 1;
                                         offsetMins = 60 + minutes - minutes;
@@ -323,11 +352,11 @@ public class CheckDeviceState {
 
     }
 
-
+    //check if FO has to be generated for devices
     @Scheduled(cron = "0 * * * * *")
     private void checkTCLFOGeneration() {
         try {
-            LOGGER.debug(tclDeviceFutureFOs.toString());
+            LOGGER.info("tclDeviceFutureFOs: " + tclDeviceFutureFOs.toString());
             Date currentTime = new Date();
             for (Map.Entry<String, Date> entry : tclDeviceFutureFOs.entrySet()) {
                 if (entry.getValue().compareTo(currentTime) < 0) { // if FO generation time delay elapsed
@@ -363,31 +392,64 @@ public class CheckDeviceState {
         }
     }
 
-    @Scheduled(fixedRate = 60000)
+    //this tigger unexecuted control signal to tp-link plug
+    @Scheduled(fixedRate = 300000)
     public void sendPendingDeviceControlSignals() {
-        LOGGER.info(this.devicePendingControlSignals.toString());
+        LOGGER.info("devicePendingControlSignals:" + this.devicePendingControlSignals.toString());
         this.devicePendingControlSignals.forEach((key, val) -> {
             LOGGER.info("Retrying to {} device: {}", val==1?"start":"stop", key);
             DeviceDetail deviceDetail = this.deviceDetailService.getDevice(key);
             DeviceState deviceState = deviceDetail.getDeviceState();
             // no point in trying if device is unreachable
-            if (!(deviceState == DeviceState.Disconnected || deviceState == DeviceState.Unknown)) {
+            if (deviceDetail.getPlugType() == PlugType.MQTT
+                    || !(deviceState == DeviceState.Disconnected || deviceState == DeviceState.Unknown)) {
                 DeviceStateChangeEvent stateChangeEvent = new DeviceStateChangeEvent(
-                        this, "Device state change event", deviceDetail, val == 1);
+                        this, "Device pending control signal event", deviceDetail, val == 1);
                 this.applicationEventPublisher.publishEvent(stateChangeEvent);
             }
         });
     }
 
+    //This schedule updates the estimated operation duration for devices
     @Scheduled(cron = "0 47 23 * * *")
-    public void updateWetDeviceOnDuration() {
+    public void updateDevicesOnDuration() {
         /**
-         * updates how long a wet device takes to completes it's operation
+         * updates how long a device takes to completes it's operation
          * the information is used during FO generation to count the number of slices
          */
-        LOGGER.info("Updating average duration of operation for wet devices");
-        this.deviceDetailService.getAllDevices().stream().filter(dd -> dd.getDeviceType() == DeviceType.DishWasher ||
-                dd.getDeviceType() == DeviceType.WasherDryer).collect(Collectors.toList())
-                .forEach(dd -> this.deviceDetailService.getDeviceOnDuration(dd.getConsumptionTs().getId()));
+        LOGGER.info("Updating average duration of operation for all devices");
+        this.deviceDetailService.getAllDevices() .forEach(this::updateOnDurationForASingleDevice);
+
+        LOGGER.info("Updating average duration of operation for pool devices");
+        organizationRepository.findAll().stream().filter(org -> org.isPoolBasedControl())
+                .collect(Collectors.toList()).forEach(org -> {
+            userService.getDeviceListforOrganization(org.getOrganizationId()).forEach(dd -> {
+                this.updateOnDurationForPoolDevice(dd, org.getOrganizationName());
+            });
+        });
+    }
+
+    private void updateOnDurationForPoolDevice(DeviceDetail dd, String orgName) {
+            String deviceId = dd.getDeviceId();
+            poolDeviceDetail.get(orgName).get(deviceId).setAverageOperationDuration(dd.getConsumptionTs().getAverageOnDuration());
+            poolDeviceDetail.get(orgName).get(deviceId)
+                    .setAveragePower(this.deviceDetailService.getAvgPowerConsumptionForLastSevenDays(deviceId));
+    }
+
+    private void updateOnDurationForASingleDevice(DeviceDetail dd) {
+        this.deviceDetailService.getDeviceOnDuration(dd.getConsumptionTs().getId());
+    }
+
+
+    @Scheduled(cron = "50 * * * * *")
+    public void executePoolSchedule() {
+       this.flexOfferScheduleReceivedListener.executePoolSchedule();
+    }
+
+
+    @Scheduled(cron = "0 */15 * * * *")
+    //@Scheduled(cron = "0 0,15,30,45 * * * *")
+    public void transferSchedules() {
+        this.flexOfferScheduleReceivedListener.transferScheduleFromPrevToCurrSlice();
     }
 }

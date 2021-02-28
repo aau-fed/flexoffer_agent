@@ -55,17 +55,17 @@ import org.springframework.web.client.RestTemplate;
 public class FlexOfferGeneratedListener implements ApplicationListener<FlexOfferGeneratedEvent> {
     private static final Logger logger = LoggerFactory.getLogger(FlexOfferGeneratedListener.class);
 
-    private Environment env;
+    private final Environment env;
 
-    private FOAProperties foaProperties;
+    private final FOAProperties foaProperties;
 
-    private FOAService foaService;
+    private final FOAService foaService;
 
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
 
-    private FmanUserRepository fmanUserRepository;
+    private final FmanUserRepository fmanUserRepository;
 
-    private FMANAccessTokenService fmanAccessTokenService;
+    private final FMANAccessTokenService fmanAccessTokenService;
 
     @Autowired
     public FlexOfferGeneratedListener(Environment env,

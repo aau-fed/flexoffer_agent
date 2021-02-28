@@ -17,7 +17,7 @@ import java.util.List;
 @Service
 public class NonTCLEVForecastService implements ForecastService {
 
-    private DemandPredictionService demandPredictionService;
+    private final DemandPredictionService demandPredictionService;
 
     @Autowired
     public NonTCLEVForecastService(DemandPredictionService demandPredictionService) {

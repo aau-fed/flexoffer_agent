@@ -93,7 +93,21 @@ public interface ConsumptionTsRepository extends JpaRepository<ConsumptionTsEnti
                                   @Param("endTime") Date endTime);
 
 
+    /*@Query("SELECT HOUR(m.date) as hourly, avg(m.energy) as energy FROM ConsumptionTsEntity t join t.deviceData m where " +
+            "m.date >= :StartTime and m.date < :endTime " +
+            "group by HOUR(m.date) order by hourly")
+    List<Map<Integer, Double>> findEnergyConsumption(@Param("StartTime") Date StartTime,
+                                                     @Param("endTime") Date endTime);*/
 
+    /*@Query("SELECT t FROM ConsumptionTsEntity t join t.deviceData m WHERE t.timeseriesId = :timeseriesId")
+    ConsumptionTsEntity findAllData(@Param("timeseriesId") long timeseriesId);
+
+    @Query("SELECT m FROM ConsumptionTsEntity t join t.deviceData m where " +
+            "t.timeseriesId = :timeseriesId and (m.date >= :StartTime and m.date < :endTime)" +
+            "order by m.date ASC")
+    List<ConsumptionTsEntity> findDataForDate(@Param("timeseriesId") long timeseriesId,
+                                              @Param("StartTime") Date StartTime,
+                                              @Param("endTime") Date endTime);*/
 
     @Query("SELECT min(m.power) FROM ConsumptionTsEntity t join t.deviceData m where " +
             "t.timeseriesId = :timeseriesId and m.date >= :StartTime " +

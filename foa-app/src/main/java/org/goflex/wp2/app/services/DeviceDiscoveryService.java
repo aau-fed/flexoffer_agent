@@ -1,12 +1,13 @@
 package org.goflex.wp2.app.services;
 
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.goflex.wp2.app.common.AppRuntimeConfig;
-import org.goflex.wp2.app.swiss.MqttSubscriber;
+import org.goflex.wp2.app.mqtt.MqttSubscriber;
 import org.goflex.wp2.core.entities.DeviceParameters;
 import org.goflex.wp2.core.models.UserT;
 import org.goflex.wp2.foa.implementation.TpLinkDeviceService;
 import org.goflex.wp2.foa.interfaces.UserService;
-import org.goflex.wp2.foa.implementation.SwissDeviceService;
+import org.goflex.wp2.foa.implementation.MqttDeviceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,23 +21,23 @@ public class DeviceDiscoveryService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeviceDiscoveryService.class);
 
-    private UserService userService;
-    private TpLinkDeviceService tpLinkDeviceService;
-    private SwissDeviceService swissDeviceService;
-    private AppRuntimeConfig appRuntimeConfig;
+    @Autowired(required = false)
+    private MqttDeviceService mqttDeviceService;
+
+    @Autowired(required = false)
     private MqttSubscriber mqttSubscriber;
+
+    private final UserService userService;
+    private final TpLinkDeviceService tpLinkDeviceService;
+    private final AppRuntimeConfig appRuntimeConfig;
 
     @Autowired
     public DeviceDiscoveryService(UserService userService,
                                   TpLinkDeviceService tpLinkDeviceService,
-                                  SwissDeviceService swissDeviceService,
-                                  AppRuntimeConfig appRuntimeConfig,
-                                  MqttSubscriber mqttSubscriber) {
+                                  AppRuntimeConfig appRuntimeConfig) {
         this.userService = userService;
         this.tpLinkDeviceService = tpLinkDeviceService;
-        this.swissDeviceService = swissDeviceService;
         this.appRuntimeConfig = appRuntimeConfig;
-        this.mqttSubscriber = mqttSubscriber;
     }
 
     //Run every hour
@@ -53,10 +54,16 @@ public class DeviceDiscoveryService {
 
     }
 
-    //Run every hour
-    @Scheduled(fixedRate = 3600000)
+
+    // second, minute, hour, day of month, month, day of week.
+    // this one runs every hour
+    @Scheduled(cron = "0 0 * * * *")
     public void runSwissDeviceDiscoveryRoutine() {
-        this.swissDeviceService.discoverSwissDevices();
-        this.mqttSubscriber.refreshTopicsAndMqttSubscriber();
+        this.mqttDeviceService.discoverMqttDevices();
+        try {
+            this.mqttSubscriber.refreshTopicsAndMqttSubscriber();
+        } catch (MqttException e) {
+           LOGGER.error(e.getMessage());
+        }
     }
 }

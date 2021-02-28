@@ -51,9 +51,9 @@ import java.util.Date;
 public class NonTCLWetDeviceFOGenerationListener implements ApplicationListener<NonTCLWetDeviceFOGeneration> {
     private static final Logger LOGGER = LoggerFactory.getLogger(NonTCLWetDeviceFOGenerationListener.class);
 
-    private NonTCLWetDeviceForecastService nonTCLWetDeviceForecastService;
-    private FlexOfferGenerator foGenerator;
-    private ApplicationEventPublisher applicationEventPublisher;
+    private final NonTCLWetDeviceForecastService nonTCLWetDeviceForecastService;
+    private final FlexOfferGenerator foGenerator;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Autowired
     public NonTCLWetDeviceFOGenerationListener(NonTCLWetDeviceForecastService nonTCLWetDeviceForecastService,

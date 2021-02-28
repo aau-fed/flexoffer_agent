@@ -52,8 +52,8 @@ class TpLinkDeviceServiceUnitTest {
     private static final String cloudAPIUrl = "https://eu-wap.tplinkcloud.com";
     private static final String userNameValid = "valid-test-user";
     private static final String userNameInvalid = "invalid-test-user";
-    private String devicePlugIdValid = "valid-mock-device-id";
-    private String devicePlugIdInvalid = "invalid-mock-device-id";
+    private final String devicePlugIdValid = "valid-mock-device-id";
+    private final String devicePlugIdInvalid = "invalid-mock-device-id";
 
 
     @MockBean

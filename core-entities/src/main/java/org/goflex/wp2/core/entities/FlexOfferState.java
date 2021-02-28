@@ -54,7 +54,7 @@ public enum FlexOfferState {
     /* The FlexOffer object is currently being executing by DER */
     InAdaptation(6);
 
-    private int value;
+    private final int value;
 
     FlexOfferState(int value) {
         this.value = value;

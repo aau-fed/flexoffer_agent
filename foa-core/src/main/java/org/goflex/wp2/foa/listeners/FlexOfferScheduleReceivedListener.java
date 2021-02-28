@@ -30,12 +30,17 @@ package org.goflex.wp2.foa.listeners;
 
 import org.goflex.wp2.core.entities.*;
 import org.goflex.wp2.core.models.*;
+import org.goflex.wp2.core.repository.FlexOfferRepository;
 import org.goflex.wp2.core.repository.OrganizationRepository;
+import org.goflex.wp2.foa.devicestate.DeviceStateHistory;
+import org.goflex.wp2.foa.devicestate.DeviceStateHistoryRepository;
+import org.goflex.wp2.foa.events.DeviceStateChangeEvent;
 import org.goflex.wp2.foa.events.FlexOfferScheduleReceivedEvent;
 import org.goflex.wp2.foa.events.FlexOfferStatusUpdateEvent;
 import org.goflex.wp2.foa.implementation.ImplementationsHandler;
 import org.goflex.wp2.foa.interfaces.*;
 import org.goflex.wp2.foa.util.TimeZoneUtil;
+import org.goflex.wp2.foa.wrapper.PoolSchedule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -44,10 +49,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -60,25 +62,8 @@ public class FlexOfferScheduleReceivedListener implements ApplicationListener<Fl
     private static final long interval = 900 * 1000;
     private static final Logger LOGGER = LoggerFactory.getLogger(FlexOfferScheduleReceivedListener.class);
 
-    private ScheduleService scheduleService;
-
-    private DeviceDetailService deviceDetailService;
-
-    private ImplementationsHandler implementationsHandler;
-
-    private ApplicationEventPublisher applicationEventPublisher;
-
-    private DeviceDefaultState deviceDefaultState;
-
-    private DeviceFlexOfferGroup deviceFlexOfferGroup;
-
-    private SmsService smsService;
-
-    private FOAService foaService;
-
-    private OrganizationRepository organizationRepository;
-
-    private UserService userService;
+    @Resource(name = "deviceLatestAggData")
+    LinkedHashMap<String, Map<Date, Double>> deviceLatestAggData;
 
     @Resource(name = "scheduleDetailTable")
     private ConcurrentHashMap<Date, ScheduleDetails> scheduleDetail;
@@ -89,12 +74,37 @@ public class FlexOfferScheduleReceivedListener implements ApplicationListener<Fl
     @Resource(name = "deviceActiveSchedule")
     private ConcurrentHashMap<String, Map<Date, Integer>> deviceActiveSchedule;
 
+    @Resource(name = "poolScheduleMap")
+    private ConcurrentHashMap<String, Map<Long, PoolSchedule>> poolScheduleMap;
+
+    @Resource(name = "poolDeviceDetail")
+    private ConcurrentHashMap<String, Map<String, PoolDeviceModel>> poolDeviceDetail;
+
+    @Resource(name = "poolTurnedOffDevices")
+    private ConcurrentHashMap<String, Map<String, Date>> poolTurnedOffDevices;
+
+    private final ScheduleService scheduleService;
+    private final DeviceDetailService deviceDetailService;
+    private final ImplementationsHandler implementationsHandler;
+    private final ApplicationEventPublisher applicationEventPublisher;
+    private final DeviceDefaultState deviceDefaultState;
+    private final DeviceFlexOfferGroup deviceFlexOfferGroup;
+    private final SmsService smsService;
+    private final FOAService foaService;
+    private final OrganizationRepository organizationRepository;
+    private final UserService userService;
+    private final FlexOfferRepository flexOfferRepository;
+    private final DeviceStateHistoryRepository deviceStateHistoryRepository;
+
+
     public FlexOfferScheduleReceivedListener(ScheduleService scheduleService, DeviceDetailService deviceDetailService,
                                              ImplementationsHandler implementationsHandler,
                                              ApplicationEventPublisher applicationEventPublisher,
                                              DeviceDefaultState deviceDefaultState, UserService userService,
                                              DeviceFlexOfferGroup deviceFlexOfferGroup, SmsService smsService,
-                                             FOAService foaService, OrganizationRepository organizationRepository) {
+                                             FOAService foaService, OrganizationRepository organizationRepository,
+                                             FlexOfferRepository flexOfferRepository,
+                                             DeviceStateHistoryRepository deviceStateHistoryRepository) {
         this.scheduleService = scheduleService;
         this.deviceDetailService = deviceDetailService;
         this.implementationsHandler = implementationsHandler;
@@ -105,6 +115,8 @@ public class FlexOfferScheduleReceivedListener implements ApplicationListener<Fl
         this.smsService = smsService;
         this.foaService = foaService;
         this.organizationRepository = organizationRepository;
+        this.flexOfferRepository = flexOfferRepository;
+        this.deviceStateHistoryRepository = deviceStateHistoryRepository;
     }
 
     private void addScheduleToFLS(String offeredById, UUID flexOfferId, Date eventTime, int action) {
@@ -269,8 +281,26 @@ public class FlexOfferScheduleReceivedListener implements ApplicationListener<Fl
     @Transactional
     public void onApplicationEvent(FlexOfferScheduleReceivedEvent event) {
         try {
-            LOGGER.debug(event.getEvent() + " at " + event.getTimestamp());
 
+            LOGGER.debug(event.getEventName() + " at " + event.getTimestamp());
+
+            FlexOfferT foT = this.flexOfferRepository.findByFoID(event.getFlexOffer().getId().toString());
+            Organization org = this.organizationRepository.findByOrganizationId(foT.getOrganizationId());
+
+            if (org.isPoolBasedControl()) {
+                processPoolSchedule(event, org);
+            } else {
+                processDeviceSchedule(event);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            LOGGER.error(ex.getLocalizedMessage());
+        }
+    }
+
+
+    private void processDeviceSchedule(FlexOfferScheduleReceivedEvent event) {
+        try {
             /** this will run only when scheduled received from FMAN,
              *  no need for schedule generated during FO generation */
             if (!event.getDefaultSchedule()) {
@@ -358,13 +388,13 @@ public class FlexOfferScheduleReceivedListener implements ApplicationListener<Fl
                                             " Uhr. Bitte schalten Sie das Gerät so bald wie möglich nach " +
                                             stringTime + " Uhr ein. Startet das Gerät automatisch, können Sie diese SMS ignorieren.";
                                 } else if (org.getOrganizationName().equals("CYPRUS")) {
-                                    String deviceType = device.getDeviceType() == DeviceType.WasherDryer ? "Washing Machine": device.getDeviceType().name();
+                                    String deviceType = device.getDeviceType() == DeviceType.WasherDryer ? "Washing Machine" : device.getDeviceType().name();
 //                                    msg = "The " + deviceType + " (" + device.getAlias() + ") will start today at " + stringTime +
 //                                            ". Please switch on the device as soon as possible after " + stringTime +
 //                                            ". If the device starts automatically, you can ignore this SMS.";
 
-                                //Η ηλεκτρική παροχή στο συσκευή  θα επανέλθει στις 17:30. Σε περίπτωση που το συσκευή δεν επανεκκινεί αυτόματα, παρακαλώ επανεκκινήστε τη συσκευή το συντομότερο μετά τις 17:30.
-                                    msg = "Η ηλεκτρική παροχή στο " + deviceType + " (" + device.getAlias() + ") θα επανέλθει στις "  + stringTime +
+                                    //Η ηλεκτρική παροχή στο συσκευή  θα επανέλθει στις 17:30. Σε περίπτωση που το συσκευή δεν επανεκκινεί αυτόματα, παρακαλώ επανεκκινήστε τη συσκευή το συντομότερο μετά τις 17:30.
+                                    msg = "Η ηλεκτρική παροχή στο " + deviceType + " (" + device.getAlias() + ") θα επανέλθει στις " + stringTime +
                                             ". Σε περίπτωση που το συσκευή δεν επανεκκινεί αυτόματα, παρακαλώ επανεκκινήστε τη συσκευή το συντομότερο μετά τις " + stringTime + ".";
 
                                 } else {
@@ -395,4 +425,314 @@ public class FlexOfferScheduleReceivedListener implements ApplicationListener<Fl
             LOGGER.error(ex.getLocalizedMessage());
         }
     }
+
+
+    private void processPoolSchedule(FlexOfferScheduleReceivedEvent event, Organization org) {
+        try {
+            if (!event.getDefaultSchedule()) {
+                LOGGER.info("New pool scheduled received from FMAN_FMAR for flex-offer with ID =>{}",
+                        event.getFlexOffer().getId());
+                /** update schedule update id by 1 */
+                event.getNewSchedule().setUpdateId(event.getFlexOffer().getFlexOfferSchedule().getUpdateId() + 1);
+                /**update flex-offer schedule */
+                event.getFlexOffer().setFlexOfferSchedule(event.getNewSchedule());
+                LOGGER.info("Pool schedule updated for Flex-offer with ID =>{}", event.getFlexOffer().getId());
+
+                // also update FlexOfferT
+                FlexOfferT flexOfferT = this.foaService.getFlexOffer(event.getFlexOffer().getId());
+                flexOfferT.setFlexoffer(event.getFlexOffer());
+
+            }
+
+            // get new schedule and related data from event
+            FlexOfferSchedule newSchedule = event.getNewSchedule();
+            FlexOffer flexOffer = event.getFlexOffer();
+            double offeredLowerEnergy = flexOffer.getFlexOfferProfile(0).getEnergyLower(0);
+            double offeredUpperEnergy = flexOffer.getFlexOfferProfile(0).getEnergyUpper(0);
+            double marketOrder = newSchedule.getTotalEnergy();
+            Date startTime = newSchedule.getStartTime();
+            Date endTime = FlexOffer.toAbsoluteTime(FlexOffer.toFlexOfferTime(startTime) + 1);
+            Date currentTime = new Date();
+
+            if (startTime.before(currentTime)) {
+                LOGGER.warn("Pool schedule time {} is before Current Time {}. Schedule Ignored", startTime, currentTime);
+                return;
+            }
+
+            if (marketOrder < offeredLowerEnergy || marketOrder > offeredUpperEnergy) {
+                LOGGER.warn("Pool schedule market order is out of bounds");
+                return;
+            }
+
+            PoolSchedule poolSchedule = new PoolSchedule();
+            // assuming there is only one slice
+            poolSchedule.setOfferedEnergyLower(offeredLowerEnergy);
+            poolSchedule.setOfferedEnergyUpper(offeredUpperEnergy);
+            poolSchedule.setMarketOrder(marketOrder); // assuming there is always one slice
+            poolSchedule.setCurrentPowerConsumption(-1);
+            poolSchedule.setCumulativeEnergy(0);
+            poolSchedule.setStartTime(startTime);
+            poolSchedule.setEndTime(endTime);
+
+            Long scheduleFoTime = FlexOffer.toFlexOfferTime(startTime);
+            Long currentSliceFoTime = FlexOffer.toFlexOfferTime(currentTime);
+
+            if (poolScheduleMap.get(org.getOrganizationName()).containsKey(scheduleFoTime)) {
+                // transfer list of turned off devices from prev slice
+                poolSchedule.setCurrentPowerConsumption(poolScheduleMap.get(org.getOrganizationName()).get(scheduleFoTime).getCurrentPowerConsumption());
+                poolSchedule.setCumulativeEnergy(poolScheduleMap.get(org.getOrganizationName()).get(scheduleFoTime).getCumulativeEnergy());
+            }
+
+            poolScheduleMap.get(org.getOrganizationName()).put(scheduleFoTime, poolSchedule);
+            printPoolSchedule();
+            LOGGER.info("poolScheduleMap map updated for organization: {}", event.getFlexOffer().getOfferedById());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            LOGGER.error(ex.getLocalizedMessage());
+        }
+    }
+
+    private void printPoolSchedule() {
+        LOGGER.info("current status of pool schedule map");
+        this.poolScheduleMap.forEach((key, val) -> {
+            val.forEach((k, v) -> {
+                LOGGER.info("org: {} slice: {}, map: {}", key, FlexOffer.toAbsoluteTime(k), v.toString());
+            });
+        });
+    }
+
+    private List<String> getDevicesToTurnOff(Double power, String orgName, double deviceCoolingPeriod) {
+        TreeMap<Double, String> devices = new TreeMap<>(Collections.reverseOrder());
+
+        List<String> devicesToTurnOff = new ArrayList<>();
+        Double powerToReduce = power;
+
+        for (String key : poolDeviceDetail.get(orgName).keySet()) {
+            PoolDeviceModel sdm = poolDeviceDetail.get(orgName).get(key);
+            if (sdm.getCurrentState() == 1 && !this.poolScheduleMap.get(orgName).containsKey(key)) {
+                devices.put(sdm.getCurrentTemperature() + new Random().nextDouble() * 0.001, sdm.getDeviceId());
+            }
+        }
+
+        for (Map.Entry<Double, String> entry : devices.entrySet()) {
+
+            if (powerToReduce < 500) {
+               break;
+            }
+
+            PoolDeviceModel sdm = poolDeviceDetail.get(orgName).get(devices.get(entry.getKey()));
+            if (sdm.getLastReleasedFromPool() != null) {
+                long coolingTime = (new Date().getTime() - sdm.getLastReleasedFromPool().getTime()) / 60000;
+                if (coolingTime < deviceCoolingPeriod) {
+                    continue;
+                }
+            }
+
+            // just in case it was recently turned on externally
+            DeviceStateHistory deviceStateHistory = deviceStateHistoryRepository.getLatestDeviceHistory(entry.getValue());
+            if (deviceStateHistory != null && deviceStateHistory.getDeviceState() == DeviceState.Operating) {
+                long coolingTime = (new Date().getTime() - deviceStateHistory.getTimestamp().getTime()) / 60000;
+                if (coolingTime < 60) {
+                    continue;
+                }
+            }
+
+            Double temperature = entry.getKey();
+            if (temperature > sdm.getMinTempThresh() && sdm.getCurrentState() == 1) {
+                devicesToTurnOff.add(poolDeviceDetail.get(orgName).get(devices.get(temperature)).getDeviceId());
+                powerToReduce = powerToReduce - poolDeviceDetail.get(orgName).get(devices.get(temperature)).getCurrentPower();
+            }
+        }
+        return devicesToTurnOff;
+    }
+
+
+    private List<String> getDevicesToTurnOn(Double power, String orgName) {
+        TreeMap<Double, String> devices = new TreeMap<>();
+        List<String> devicesToTurnOn = new ArrayList<>();
+        Double powerToIncrease = power;
+        for (String deviceId : poolDeviceDetail.get(orgName).keySet()) {
+            PoolDeviceModel sdm = poolDeviceDetail.get(orgName).get(deviceId);
+            long coolingTime = 16;
+            if (sdm.getLastIncludedInPool() != null) {
+                coolingTime = (new Date().getTime() - sdm.getLastIncludedInPool().getTime()) / 60000;
+            }
+            if ( (this.poolTurnedOffDevices.get(orgName).containsKey(deviceId) || orgName.equals("TEST") )
+                    && sdm.getCurrentState() == 0 && coolingTime > 15) {
+                devices.put(sdm.getCurrentTemperature() + new Random().nextDouble() * 0.001, sdm.getDeviceId());
+            }
+        }
+
+        for (Map.Entry<Double, String> entry : devices.entrySet()) {
+
+            Double temperature = entry.getKey();
+
+            if (powerToIncrease < 500) {
+                break;
+            }
+
+            // just in case it was recently turned on externally
+            DeviceStateHistory deviceStateHistory = deviceStateHistoryRepository.getLatestDeviceHistory(entry.getValue());
+            if (deviceStateHistory != null && deviceStateHistory.getDeviceState() == DeviceState.Idle) {
+                long coolingTime = (new Date().getTime() - deviceStateHistory.getTimestamp().getTime()) / 60000;
+                if (coolingTime < 5) {
+                    continue;
+                }
+            }
+
+            String deviceId = devices.get(temperature);
+            if (temperature < poolDeviceDetail.get(orgName).get(deviceId).getMaxTempThresh()) {
+                    devicesToTurnOn.add(poolDeviceDetail.get(orgName).get(devices.get(temperature)).getDeviceId());
+                    powerToIncrease = powerToIncrease - poolDeviceDetail.get(orgName).get(devices.get(temperature)).getCurrentPower();
+            }
+
+        }
+        return devicesToTurnOn;
+    }
+
+    private void releaseDevicesFromPool(String orgName) {
+
+        Set<String> deviceIds = this.poolTurnedOffDevices.get(orgName).keySet();
+        if (deviceIds.size() == 0) {
+            return;
+        }
+
+        LOGGER.info("Releasing necessary devices from the pool");
+
+        for (String deviceId : deviceIds) {
+            Date turnedOffTime = this.poolTurnedOffDevices.get(orgName).get(deviceId);
+            long minutes = (new Date().getTime() - turnedOffTime.getTime()) / (1000 * 60);
+            if (minutes > 30) {
+                DeviceDetail deviceDetail = this.deviceDetailService.getDevice(deviceId);
+                DeviceStateChangeEvent stateChangeEvent = new DeviceStateChangeEvent(
+                        this, String.format("releasing device: '%s' which was turned off at: '%s' from the pool",
+                        deviceDetail.getDeviceId(), turnedOffTime),
+                        deviceDetail, true);
+                this.applicationEventPublisher.publishEvent(stateChangeEvent);
+                this.poolDeviceDetail.get(orgName).get(deviceId).setLastReleasedFromPool(new Date());
+                this.poolTurnedOffDevices.get(orgName).remove(deviceId);
+                LOGGER.info("Released org: {}, device: {} from the pool", orgName, deviceId);
+            }
+        }
+    }
+
+
+    public void executePoolSchedule() {
+        long foTime = FlexOffer.toFlexOfferTime(new Date());
+        this.poolScheduleMap.forEach((orgName, orgPoolMap) -> {
+
+            // first release those devices that are in OFF state longer than threshold
+            releaseDevicesFromPool(orgName);
+
+            // update pool power consumption
+            updatePoolScheduleMapPower(orgName);
+
+            // execute pool schedule for the organization
+            executeOrgSchedule(orgName, foTime, orgPoolMap);
+
+        });
+    }
+
+
+    private void executeOrgSchedule(String orgName, long foTime, Map<Long, PoolSchedule> orgPoolMap) {
+
+        if (orgPoolMap.size() == 0) {
+            return;
+        }
+
+        if (!orgPoolMap.containsKey(foTime)) {
+            return;
+        }
+
+        double lowerEnergy = orgPoolMap.get(foTime).getOfferedEnergyLower()*4000;
+        double upperEnergy = orgPoolMap.get(foTime).getOfferedEnergyUpper()*4000;
+        if ( Math.abs(upperEnergy-lowerEnergy) < 1) {
+            LOGGER.info("Org: {} is in cooling period", orgName);
+            return;
+        }
+
+        PoolSchedule poolSchedule = orgPoolMap.get(foTime);
+        if (poolSchedule == null) {
+            LOGGER.warn("No pool schedule found for the current slice for org: {}", orgName);
+            return;
+        }
+
+        double marketOrder = poolSchedule.getMarketOrder() * 1000 * 4;
+
+        double currentPowerConsumption = poolSchedule.getCurrentPowerConsumption();
+        if (currentPowerConsumption < 0) {
+            return;
+        }
+
+        double cumulativeEnergy = poolSchedule.getCumulativeEnergy(); // Wh for now
+
+        Organization org = this.organizationRepository.findByOrganizationName(orgName);
+        LOGGER.info("Org: {}, Market order: {}, current consumption: {}", org.getOrganizationName(),
+                marketOrder, currentPowerConsumption);
+
+        if (marketOrder < currentPowerConsumption) {
+            List<String> devicesToTurnOff = getDevicesToTurnOff(currentPowerConsumption-marketOrder, orgName,
+                    org.getPoolDeviceCoolingPeriod());
+
+            if (devicesToTurnOff.size() > 0 && org.getDirectControlMode() != OrganizationLoadControlState.Active) {
+                LOGGER.warn("Not turning off devices because organization control disabled for: {}", orgName);
+                return;
+            }
+
+            devicesToTurnOff.forEach(deviceId -> {
+                DeviceDetail device = this.deviceDetailService.getDevice(deviceId);
+                DeviceStateChangeEvent stateChangeEvent = new DeviceStateChangeEvent(
+                        this, String.format("Turning off device: '%s' due to inclusion in the pool",
+                        device.getDeviceId()),
+                        device, false);
+                this.applicationEventPublisher.publishEvent(stateChangeEvent);
+                this.poolDeviceDetail.get(orgName).get(deviceId).setLastIncludedInPool(new Date());
+                this.poolTurnedOffDevices.get(orgName).put(deviceId, new Date());
+            });
+        } else {
+            List<String> devicesToTurnOn = getDevicesToTurnOn(marketOrder-currentPowerConsumption, orgName);
+
+            if (devicesToTurnOn.size() > 0 && org.getDirectControlMode() != OrganizationLoadControlState.Active) {
+                LOGGER.warn("Not turning on devices because organization control disabled for: {}", orgName);
+                return;
+            }
+
+            devicesToTurnOn.forEach(deviceId -> {
+                DeviceDetail device = this.deviceDetailService.getDevice(deviceId);
+                DeviceStateChangeEvent stateChangeEvent = new DeviceStateChangeEvent(
+                        this, String.format("Turning on device: '%s' due to inclusion in the pool",
+                        device.getDeviceId()),
+                        device, true);
+                this.applicationEventPublisher.publishEvent(stateChangeEvent);
+            });
+        }
+
+        // update cumulative energy
+        this.poolScheduleMap.get(orgName).get(foTime).setCumulativeEnergy(cumulativeEnergy + currentPowerConsumption);
+    }
+
+    public void transferScheduleFromPrevToCurrSlice() {
+        LOGGER.info("executing routine to transfer necessary schedule data from prev to curr slice");
+        long currentSliceFoTime = FlexOffer.toFlexOfferTime(new Date());
+        this.poolScheduleMap.forEach((orgName, orgPoolMap) -> {
+            if (orgPoolMap.containsKey(currentSliceFoTime - 1)) {
+                // delete prev slice from map
+                this.poolScheduleMap.get(orgName).remove(currentSliceFoTime - 1);
+            }
+        });
+    }
+
+    private void updatePoolScheduleMapPower(String orgName) {
+
+        double latestAggPower = 0.0;
+        for (Map.Entry<String, PoolDeviceModel> entry : this.poolDeviceDetail.get(orgName).entrySet()) {
+            latestAggPower += entry.getValue().getCurrentPower();
+        }
+
+        long foTime = FlexOffer.toFlexOfferTime(new Date());
+        if (this.poolScheduleMap.get(orgName).containsKey(foTime)) {
+            this.poolScheduleMap.get(orgName).get(foTime).setCurrentPowerConsumption(latestAggPower);
+        }
+    }
+
 }

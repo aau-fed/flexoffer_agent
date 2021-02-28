@@ -1,0 +1,18 @@
+<div class="col-md-3 pd-left-fix hidden-print" ng-controller="NavBarController">
+    <aside>
+        <a href="javascript:void(0)" class="menu-toggle visible-xs">Menu</a>
+        <ul class="aside-menu">
+            <li><a href="#!/dashboard"><i class="icon-nav icon-nav-dashboard"></i><span class="span-nav" translate>MENU_DASHBOARD</span></a></li>
+            <li><a href="#!/devicelist"><i class="icon-nav icon-nav-devices"></i><span class="span-nav" translate>MENU_DEVICES</span></a> </li>
+            <!-- <li ng-show="role == 'ROLE_ADMIN'"><a href="#!/grouping"><i class="icon-nav icon-nav-device-grouping"></i><span class="span-nav" translate>MENU_DEVICE_GROUPING</span></a></li> -->
+            <li><a href="#!/grouping"><i class="icon-nav icon-nav-device-grouping"></i><span class="span-nav" translate>MENU_DEVICE_GROUPING</span></a></li>
+            <li ng-show="role!='ROLE_ADMIN'"><a href="#!/bill/{{userName()}}"><i class="icon-nav icon-nav-rewards"></i><span class="span-nav" translate>MENU_REWARDS</span></a></li>
+            <li ng-show="role!='ROLE_ADMIN'"><a href="#!/contract/{{userName()}}"><i class="icon-nav icon-nav-contract"></i><span class="span-nav" translate>MENU_CONTRACT</span></a></li>
+            <li ng-show="role=='ROLE_ADMIN'"><a href="#!/user"><i class="icon-nav icon-nav-profile"></i><span class="span-nav" translate>MENU_USERS</span></a></li>
+            <li><a href="#!/messages"><i class="icon-nav icon-nav-messages"></i><span class="span-nav" translate>MENU_MESSAGES</span></a></li>
+            <li ng-show="role=='ROLE_ADMIN'"><a href="#!/config"><i class="icon-nav icon-nav-tools"></i><span class="span-nav" translate>MENU_TOOLS</span></a></li>
+            <li><a href="#!/profile/{{userName()}}"><i class="icon-nav icon-nav-profile"></i><span class="span-nav" translate>MENU_PROFILE</span></a></li>
+            <li><a href="javascript:void(0);" ng-click="signout();"><i class="icon-nav icon-nav-logout"></i> <span class="span-nav" translate>MENU_LOGOUT</span></a></li>
+        </ul>
+    </aside>
+</div>

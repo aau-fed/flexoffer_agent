@@ -150,8 +150,6 @@ public class FlexOfferDiscreteConstraint implements Serializable {
         FlexOfferDiscreteConstraint other = (FlexOfferDiscreteConstraint) obj;
         if (lower != other.lower)
             return false;
-        if (upper != other.upper)
-            return false;
-        return true;
+        return upper == other.upper;
     }
 }

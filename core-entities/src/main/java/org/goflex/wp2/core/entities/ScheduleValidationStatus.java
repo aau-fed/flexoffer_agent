@@ -11,7 +11,7 @@ public enum ScheduleValidationStatus {
     RejectedDueToExecution(3),
     InvalidFlexOfferId(4);
 
-    private int value;
+    private final int value;
 
     ScheduleValidationStatus(int value) {
         this.value = value;

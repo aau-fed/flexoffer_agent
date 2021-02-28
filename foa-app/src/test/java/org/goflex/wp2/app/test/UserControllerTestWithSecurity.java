@@ -112,7 +112,7 @@ class UserControllerTestWithSecurity {
 
 
         mockMvc.perform(post("/prosumer/updateUser")
-
+                //.with(user("rob").password("pass"))
                 .with(user("rob"))
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)

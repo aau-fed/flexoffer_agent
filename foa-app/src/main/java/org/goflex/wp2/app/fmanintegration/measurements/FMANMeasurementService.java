@@ -31,10 +31,10 @@ public class FMANMeasurementService {
     @Resource(name = "startGeneratingFo")
     private ConcurrentHashMap<String, Integer> startGeneratingFo;
 
-    private ScheduleService scheduleService;
-    private FOAProperties foaProperties;
-    private OrganizationRepository organizationRepository;
-    private OrganizationalConsumptionService organizationalConsumptionService;
+    private final ScheduleService scheduleService;
+    private final FOAProperties foaProperties;
+    private final OrganizationRepository organizationRepository;
+    private final OrganizationalConsumptionService organizationalConsumptionService;
 
     public FMANMeasurementService(ScheduleService scheduleService,
                                   FOAProperties foaProperties,
@@ -116,10 +116,9 @@ public class FMANMeasurementService {
                     // even though there is only one key-value pair for each organization, we are running a loop to
                     // automatically get date key
                     for (Date key : orgAccEnergyData.get(org.getOrganizationName()).keySet()) {
-                        cumulativeEnergy = orgAccEnergyData.get(org.getOrganizationName()).get(key) + cumulativeEnergy;
+                        cumulativeEnergy += orgAccEnergyData.get(org.getOrganizationName()).get(key);
                         if (deviceLatestAggData.containsKey(org.getOrganizationName())) {
-                            latestAggPower =
-                                    deviceLatestAggData.get(org.getOrganizationName()).get(key) + latestAggPower;
+                            latestAggPower += deviceLatestAggData.get(org.getOrganizationName()).get(key);
                         }
                         ts = key;
                     }
@@ -137,6 +136,7 @@ public class FMANMeasurementService {
         }
 
     }
+
 
     private int getOperationState(String organization) {
         int state = 1;

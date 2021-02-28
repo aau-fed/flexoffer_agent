@@ -49,12 +49,12 @@ public interface ScheduleRepository extends JpaRepository<ScheduleT, Long> {
     /**
      * Find  schedule by Date
      */
-    public ScheduleT findByScheduleDate(Date scheduleDate);
+    ScheduleT findByScheduleDate(Date scheduleDate);
 
     @Query("SELECT d FROM ScheduleT s " +
             "inner join s.onOffSchedules d " +
             "WHERE d.flexOfferId = :flexOfferId and d.isValid = 1")
-    public List<OnOffSchedule> findByFlexOfferId(@Param("flexOfferId") String flexOfferId);
+    List<OnOffSchedule> findByFlexOfferId(@Param("flexOfferId") String flexOfferId);
 
     /**
      * Find  schedule by FODate
@@ -62,7 +62,7 @@ public interface ScheduleRepository extends JpaRepository<ScheduleT, Long> {
     @Query("SELECT s FROM ScheduleT s " +
             "inner join s.onOffSchedules d " +
             "WHERE s.scheduleDate >= :startDate and s.scheduleDate < :endDate and d.scheduleToState = 1 and d.isValid = 1")
-    public List<ScheduleT> findByScheduleFODate(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+    List<ScheduleT> findByScheduleFODate(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
 
     /**
@@ -70,12 +70,12 @@ public interface ScheduleRepository extends JpaRepository<ScheduleT, Long> {
      */
     @Query("SELECT s FROM ScheduleT s " +
             "WHERE s.scheduleDate >= :currentFoDate")
-    public List<ScheduleT> findByFutureFODate(@Param("currentFoDate") Date currentFoDate);
+    List<ScheduleT> findByFutureFODate(@Param("currentFoDate") Date currentFoDate);
 
     @Query("SELECT d FROM ScheduleT s " +
             "inner join s.onOffSchedules d " +
             "WHERE s.scheduleDate = :scheduleDate and d.deviceID = :deviceID and d.isValid = 1")
-    public OnOffSchedule findByScheduleDateAndDeviceId(@Param("scheduleDate") Date scheduleDate, @Param("deviceID") String deviceId);
+    OnOffSchedule findByScheduleDateAndDeviceId(@Param("scheduleDate") Date scheduleDate, @Param("deviceID") String deviceId);
 
     /**
      * Find  all schedule by schedule date
@@ -83,7 +83,7 @@ public interface ScheduleRepository extends JpaRepository<ScheduleT, Long> {
     @Query("SELECT d FROM ScheduleT s " +
             "inner join s.onOffSchedules d " +
             "WHERE s.scheduleDate = :scheduleDate and d.isValid = 1 and d.pushedToDevice = 0")
-    public List<OnOffSchedule> findAllByScheduleDate(@Param("scheduleDate") Date scheduleDate);
+    List<OnOffSchedule> findAllByScheduleDate(@Param("scheduleDate") Date scheduleDate);
 
     /**
      * findschedule by onoff schedule id
@@ -91,6 +91,6 @@ public interface ScheduleRepository extends JpaRepository<ScheduleT, Long> {
     @Query("SELECT d FROM ScheduleT s " +
             "inner join s.onOffSchedules d " +
             "WHERE d.onOffScheduleId = :onOffScheduleId and d.isValid = 1")
-    public OnOffSchedule findByOnOffScheduleId(@Param("onOffScheduleId") long onOffScheduleId);
+    OnOffSchedule findByOnOffScheduleId(@Param("onOffScheduleId") long onOffScheduleId);
 
 }

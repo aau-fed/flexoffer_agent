@@ -1,0 +1,49 @@
+<div class="col-md-9 sn-form sn-form-group">
+    <h2 class="title text-center" style="margin-bottom: 25px;" translate>GROUPING_DEVICE_GROUP</h2>
+
+    <form ng-submit="submit()">
+        <div ng-class="messageType" role="alert" ng-bind="messageText"></div>
+        <div class="form-group">
+            <label class="sr-only" for="input-tplinkusername">Group Name</label>
+            <input class="form-control" id="input-groupname" name="groupname" placeholder="{{'GROUPING_PLACEHOLDER' | translate}}" type="text" ng-model="groupname">
+        </div>
+
+        <button class="btn btn-block btn-hero-success" type="submit" translate="{{buttonLabel}}">
+        </button>
+
+    </form>
+    <br></br>
+    <br></br>
+    <div class="col-md-6 pd-left-fix ">
+        <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <tbody>
+                <tr>
+                    <td>
+                        <strong translate>
+                            GROUPING_GROUP_NO
+                        </strong>
+                    </td>
+                    <td>
+                        <strong translate>
+                            GROUPING_GROUP_NAME
+                        </strong>
+                    </td>
+                    <td></td>
+                </tr>
+                <tr ng-repeat="group in groups">
+                    <td>{{group.hierarchyId}}</td>
+                    <td>{{group.hierarchyName}}</td>
+                    <td>
+                        <img src="img/delete.svg" ng-click="delete(group)"> &emsp;
+                        <img src="img/edit.svg" ng-click="edit(group)"> </td>
+                </tr>
+
+            </tbody>
+        </table>
+        </div>
+    </div>
+
+    <div class="links"></div>
+    <div class="clearfix"></div>
+</div>

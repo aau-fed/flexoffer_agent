@@ -22,7 +22,7 @@ public class FMANAccessTokenService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FMANAccessTokenService.class);
 
-    private String fmanToken = "";
+    private final String fmanToken = "";
 
     @Autowired
     private RestTemplate restTemplate;
@@ -41,7 +41,7 @@ public class FMANAccessTokenService {
     public void updateToken(FmanUser fmanUser) {
         Map<String, String> credential = new HashMap<>();
         credential.put("userName", fmanUser.getUserName());
-        credential.put("password", "");
+        credential.put("password", "admin");
 
         HttpHeaderFormatter httpHeaderFormatter = new HttpHeaderFormatter();
         HttpEntity<Map<String, String>> entity = new HttpEntity<>(credential, null);
@@ -73,4 +73,48 @@ public class FMANAccessTokenService {
     }
 
 
+    /*@Scheduled(fixedRate = 600000)
+    public void updateFMANToken(){
+        for(FmanUser fmanUser:fmanUserRepository.findAll()){
+            updateToken(fmanUser);
+        }
+
+    }*/
+
+
+    //@Scheduled(fixedRate = 6000000)
+    /*public void getFMANToken_abs() {
+
+        Map<String, String> credential = new HashMap<>();
+        credential.put("userName", "admin");
+        credential.put("password","admin");
+
+        HttpHeaderFormatter httpHeaderFormatter = new HttpHeaderFormatter();
+        //HttpHeaders httpHeaders = httpHeaderFormatter.createHeaders("admin", "admin");
+        HttpEntity<Map<String,String>> entity = new HttpEntity<>(credential, null);
+
+        try {
+
+            Object response = restTemplate.postForEntity("http://localhost:8085/user/login", entity, String.class);
+            System.out.println(((ResponseEntity) response).getBody());
+
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode responseJsn = null;
+
+            try {
+                responseJsn = mapper.readTree(((ResponseEntity) response).getBody().toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+
+            }
+            if(responseJsn.has("token")){
+                this.fmanToken = responseJsn.get("token").textValue();
+
+            }
+
+        } catch (Exception ex) {
+            System.out.println(ex);
+        }
+
+    }*/
 }

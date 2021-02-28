@@ -409,7 +409,20 @@ public class UserController {
             }
         }
 
-
+        /*if (!StringUtils.isEmpty(user.getTpLinkUserName())) {
+            payload.put("tpLinkUserName", user.getTpLinkUserName());
+            if(userService.tpLinkUserExist(user.getTpLinkUserName())){
+                return errorResponse(String.format("TpLinkUserName: %s already exists", user.getTpLinkUserName()), HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+        }else{
+            if(!user.getTpLinkUserName().equals(usr.getTpLinkUserName())) {*//**check if tplink username and password is empty *//*
+                if (StringUtils.isEmpty(user.getTpLinkUserName())) {
+                    payload.put("tpLinkUserName", null);
+                } else {
+                    payload.put("tpLinkUserName", user.getTpLinkUserName());
+                }
+            }
+        }*/
 
         if (!StringUtils.isEmpty(receivedUsr.getTpLinkPassword())) {
             //if username is empty then set password to null
@@ -423,7 +436,18 @@ public class UserController {
                 payload.put("tpLinkPassword", null);
             }
 
-        }
+        }//else{
+//            //check if the null is due to passport update
+//            if(StringUtils.isEmpty(usr.getTpLinkPassword())){
+//                payload.put("tpLinkUserName", null);
+//                payload.put("tpLinkPassword", null);
+//            }else if(!StringUtils.isEmpty(user.getTpLinkUserName())){
+//                if(!user.getTpLinkUserName().equals(usr.getTpLinkUserName())) {
+//                    payload.put("tpLinkUserName", null);
+//                    payload.put("tpLinkPassword", null);
+//                }
+//            }
+//        }
 
 
         if (!StringUtils.isEmpty(receivedUsr.getPassword())) {
@@ -1176,7 +1200,7 @@ public class UserController {
 
     @RequestMapping(value = "/setOrgControl/{status}", method = RequestMethod.POST)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity getOrganization(@PathVariable(value = "status") int status) {
+    public ResponseEntity setOrganizationControl(@PathVariable(value = "status") int status) {
 
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -1204,4 +1228,130 @@ public class UserController {
         }
     }
 
+    @RequestMapping(value = "/setOrgPoolControl/{state}", method = RequestMethod.POST)
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity setOrgPoolControlAdmin(@PathVariable(value = "state") boolean state) {
+
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserT adminUsr = userService.getUser(authentication.getName());
+            if (adminUsr == null) {
+                return errorResponse(String.format("Admin user: %s not found", authentication.getName()), HttpStatus.UNAUTHORIZED);
+            }
+
+            Organization organization = organizationRepository.findByOrganizationId(adminUsr.getOrganizationId());
+            if (organization == null) {
+                String msg = String.format("Organization with id: %d does not exist", adminUsr.getOrganizationId());
+                return errorResponse(msg, HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+
+
+
+            organization.setPoolBasedControl(state);
+            organizationRepository.save(organization);
+
+            ResponseMessage responseMessage = new ResponseMessage();
+            responseMessage.setMessage("Success");
+            responseMessage.setData(organization);
+            responseMessage.setStatus(HttpStatus.OK);
+            return new ResponseEntity(responseMessage, HttpStatus.OK);
+        } catch (Exception ex) {
+            return errorResponse(ex.getLocalizedMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @RequestMapping(value = "/setOrgPoolControl/{orgid}/{state}", method = RequestMethod.POST)
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity setOrgPoolControl(@PathVariable(value = "orgid") long orgid,
+                                            @PathVariable(value = "state") boolean state) {
+
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserT adminUsr = userService.getUser(authentication.getName());
+            if (adminUsr == null) {
+                return errorResponse(String.format("Admin user: %s not found", authentication.getName()), HttpStatus.UNAUTHORIZED);
+            }
+
+            Organization organization = organizationRepository.findByOrganizationId(orgid);
+            if (organization == null) {
+                String msg = String.format("Organization with id: %d does not exist", adminUsr.getOrganizationId());
+                return errorResponse(msg, HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+
+            organization.setPoolBasedControl(state);
+            organizationRepository.save(organization);
+
+            ResponseMessage responseMessage = new ResponseMessage();
+            responseMessage.setMessage("Success");
+            responseMessage.setData(organization);
+            responseMessage.setStatus(HttpStatus.OK);
+            return new ResponseEntity(responseMessage, HttpStatus.OK);
+        } catch (Exception ex) {
+            return errorResponse(ex.getLocalizedMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    @RequestMapping(value = "/setCoolingPeriod/{orgid}/{coolingperiod}", method = RequestMethod.POST)
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity setOrgPoolControl(@PathVariable(value = "orgid") long orgid,
+                                            @PathVariable(value = "coolingperiod") double coolingperiod) {
+
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserT adminUsr = userService.getUser(authentication.getName());
+            if (adminUsr == null) {
+                return errorResponse(String.format("Admin user: %s not found", authentication.getName()), HttpStatus.UNAUTHORIZED);
+            }
+
+            Organization organization = organizationRepository.findByOrganizationId(orgid);
+            if (organization == null) {
+                String msg = String.format("Organization with id: %d does not exist", adminUsr.getOrganizationId());
+                return errorResponse(msg, HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+
+
+
+            organization.setPoolDeviceCoolingPeriod(coolingperiod);
+            organizationRepository.save(organization);
+
+            ResponseMessage responseMessage = new ResponseMessage();
+            responseMessage.setMessage("Success");
+            responseMessage.setData(organization);
+            responseMessage.setStatus(HttpStatus.OK);
+            return new ResponseEntity(responseMessage, HttpStatus.OK);
+        } catch (Exception ex) {
+            return errorResponse(ex.getLocalizedMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @RequestMapping(value = "/setCoolingPeriod/{coolingperiod}", method = RequestMethod.POST)
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity setOrgPoolControl(@PathVariable(value = "coolingperiod") double coolingperiod) {
+
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserT adminUsr = userService.getUser(authentication.getName());
+            if (adminUsr == null) {
+                return errorResponse(String.format("Admin user: %s not found", authentication.getName()), HttpStatus.UNAUTHORIZED);
+            }
+
+            Organization organization = organizationRepository.findByOrganizationId(adminUsr.getOrganizationId());
+            if (organization == null) {
+                String msg = String.format("Organization with id: %d does not exist", adminUsr.getOrganizationId());
+                return errorResponse(msg, HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+
+            organization.setPoolDeviceCoolingPeriod(coolingperiod);
+            organizationRepository.save(organization);
+
+            ResponseMessage responseMessage = new ResponseMessage();
+            responseMessage.setMessage("Success");
+            responseMessage.setData(organization);
+            responseMessage.setStatus(HttpStatus.OK);
+            return new ResponseEntity(responseMessage, HttpStatus.OK);
+        } catch (Exception ex) {
+            return errorResponse(ex.getLocalizedMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

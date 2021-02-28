@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 public class SetupTpLinkDevicesEventListener implements ApplicationListener<SetupTpLinkDevicesEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(SetupTpLinkDevicesEventListener.class);
 
-    private TpLinkDeviceService tpLinkDeviceService;
+    private final TpLinkDeviceService tpLinkDeviceService;
 
     @Autowired
     public SetupTpLinkDevicesEventListener(TpLinkDeviceService tpLinkDeviceService) {

@@ -1,7 +1,7 @@
 # Use the Oracal Java 8 as parent image
 FROM java:8
-MAINTAINER "muhaftab@cs.aau.dk"
-LABEL vendor="GOFLEX"
+MAINTAINER "bn21@cs.aau.dk"
+LABEL vendor="AAU FED"
 
 # Set the working directory to /app
 WORKDIR /app

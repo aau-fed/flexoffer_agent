@@ -1,3 +1,4 @@
+/paho*
 /target/
 !.mvn/wrapper/maven-wrapper.jar
 
@@ -26,3 +27,4 @@
 
 *.log
 /LogData/
+*.jks

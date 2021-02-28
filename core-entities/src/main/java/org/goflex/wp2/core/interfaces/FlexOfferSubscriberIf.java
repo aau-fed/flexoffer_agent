@@ -43,7 +43,7 @@ public interface FlexOfferSubscriberIf {
      * @return An ID of an inserted flex-offer
      * @throws FlexOfferException
      */
-    public int createFlexOffer(String ownerId, FlexOffer flexOffer) throws FlexOfferException;
+    int createFlexOffer(String ownerId, FlexOffer flexOffer) throws FlexOfferException;
 
     /**
      * Get a flex offer with specified id
@@ -51,19 +51,19 @@ public interface FlexOfferSubscriberIf {
      * @param flexOfferId
      * @return A flex-offer
      */
-    public FlexOffer getFlexOffer(String ownerId, int flexOfferId);
+    FlexOffer getFlexOffer(String ownerId, int flexOfferId);
 
     /**
      * Update a flex-offer
      *
      * @throws FlexOfferException
      */
-    public void setFlexOffer(String ownerId, int flexOfferId, FlexOffer flexOffer) throws FlexOfferException;
+    void setFlexOffer(String ownerId, int flexOfferId, FlexOffer flexOffer) throws FlexOfferException;
 
     /**
      * Delete flex-offer
      */
-    public void deleteFlexOffer(String ownerId, int flexOfferId) throws FlexOfferException;
+    void deleteFlexOffer(String ownerId, int flexOfferId) throws FlexOfferException;
 
     /**
      * Get a collection of flex offers
@@ -71,6 +71,6 @@ public interface FlexOfferSubscriberIf {
      * @params flexOffers
      */
 
-    public FlexOffer[] getFlexOffers();
+    FlexOffer[] getFlexOffers();
 
 }

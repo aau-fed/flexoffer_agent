@@ -17,7 +17,7 @@ import java.util.List;
 @Service
 public class ProductionForecastService implements ForecastService {
 
-    private DemandPredictionService demandPredictionService;
+    private final DemandPredictionService demandPredictionService;
 
     @Autowired
     public ProductionForecastService(DemandPredictionService demandPredictionService) {

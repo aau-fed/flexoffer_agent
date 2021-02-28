@@ -242,8 +242,8 @@ public class DeviceDetailServiceImpl implements DeviceDetailService {
                 getCtsForDate(deviceDetail.getConsumptionTs().getId(), fromDate, toDate);
 
         Map<Date, Double> devicePowerDataMap = deviceDataList.stream()
-                .collect(Collectors.toMap(DeviceData::getDate, DeviceData::getPower, (oldVal, newVal) -> oldVal,
-                        LinkedHashMap::new));
+                .collect(Collectors.toMap(DeviceData::getDate, DeviceData::getPower,
+                        (oldVal, newVal) -> Math.max(oldVal, newVal), LinkedHashMap::new));
 
         return devicePowerDataMap;
     }
@@ -402,6 +402,12 @@ public class DeviceDetailServiceImpl implements DeviceDetailService {
     @Override
     public void deleteDevicesByHierarchyId(long hierarchyId) {
         deviceRepository.deleteAllByDeviceHierarchy_HierarchyId(hierarchyId);
+    }
+
+    @Override
+    public List<DeviceDetail> getDevicesByHierarchyId(long hierarchyId) {
+        List<DeviceDetail> devices = deviceRepository.findAllByDeviceHierarchy_HierarchyId(hierarchyId);
+        return devices;
     }
 
     @Override

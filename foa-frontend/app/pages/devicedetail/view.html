@@ -1,0 +1,148 @@
+<div class="col-md-9">
+
+    <div ng-class="messageType" role="alert" ng-if="messageText">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+                aria-hidden="true">&times;</span></button>
+        <span ng-bind="messageText"></span>
+    </div>
+
+    <div class="content-tab bg-white">
+        <div class="button-header">
+            <div class="col-md-12 pd-left-fix">
+
+                <!--Back button-->
+                <div class="col-md-1" style="width: 10%; padding-right:0;">
+                    <a href="#!/devicelist">
+                        <i class="icon ion-ios-arrow-left">
+                        </i>
+                        <span translate>DEVICEDETAIL_BACK</span>
+                    </a>
+                </div>
+
+                <!--Device type and state icons-->
+                <div class="col-md-1" style="width: 5%;">
+                    <div class="button-header-image">
+                        <img ng-src="{{deviceTypeIconUrl}}">
+                    </div>
+                    <div class="button-header-image btn-header-state">
+                        <img ng-src="{{deviceStateIconUrl}}">
+                    </div>
+                </div>
+
+                <!--Device type, alias, id-->
+                <div class="col-md-3" style="padding-top: 15px;">
+                    <ul class="btn-header-list">
+                        <li>{{deviceDetail.alias}}</li>
+                        <li>{{deviceDetail.deviceType}}</li>
+                        <li style="font-size: x-small">{{deviceDetail.deviceState}}</li>
+                    </ul>
+                </div>
+
+                <!-- Flexibility Control Button -->
+                <!-- <div class="col-md-2" style="text-align: center;" title="{{'TOOLTIP_FLEXIBILITY_SWITCH' | translate}}">
+                    <span class="pull-right">
+                    <label class="switch" style="text-align: left;">
+                        <input type="checkbox" ng-change="valueChanged()" ng-model="isDeviceFlexible">
+                        <span class="slider"></span>
+                    </label>
+                    <div style="font-weight: 600;">
+                        {{'DEVICEDETAIL_DEVICE_FLEXIBILITY' | translate}}
+                    </div>
+                    </span>
+                </div> -->
+
+                <!-- Power Control Button -->
+                <div class="col-md-2" style="text-align: center;" title="{{'TOOLTIP_POWER_SWITCH' | translate}}">
+                    <span class="pull-right">
+                        <label class="switch {{ (deviceDetail.deviceState == 'Disconnected') ? 'disabled' : 'ss'}}">
+                            <input type="checkbox" ng-model="deviceStatus" ng-change="toggleDevicePower()"
+                                ng-disabled="(deviceDetail.deviceState == 'Disconnected')" />
+                            <span class="slider"></span>
+                        </label>
+                        <div style="font-weight: 600;">
+                            {{'DEVICEDETAIL_DEVICE_POWER' | translate}}
+                        </div>
+                    </span>
+                </div>
+
+                <!-- Save/undo buttons-->
+                <div class="col-md-1 pull-right text-center" style="width: 10%; padding: 0; text-align:center;">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <button style="position:relative; width: 80px; height: 40px; margin-bottom: 5px;"
+                                        type="button" class="btn btn-primary" ng-click="updateDevice();"
+                                        ng-disabled="noChange" translate>DEVICEDETAIL_SAVE</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <button
+                                        style="position: static; color: whitesmoke; font-size: smaller; padding: 0; min-width: 70px; height: 20px; background-color: grey;"
+                                        title="{{'TOOLTIP_UNDO' | translate}}" type="button" class="btn"
+                                        ng-click="discardChanges();" ng-disabled="noChange" translate>DEVICEDETAIL_UNDO
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+            <div class="clearfix"></div>
+        </div>
+
+
+        <!--tab start-->
+        <div class="col-md-12 pd-left-fix">
+            <div class="info-tab">
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="active" role="presentation">
+                        <a aria-controls="basic" data-toggle="tab" data-target="#basic-info" role="tab">
+                            <span translate>DEVICEDETAIL_BASIC_INFO</span>
+                        </a>
+                    </li>
+                    <li role="presentation">
+                        <a aria-controls="load" data-toggle="tab" data-target="#flex-settings" role="tab">
+                            <span translate>DEVICEDETAIL_FLEX_SETTINGS</span>
+                        </a>
+                    </li>
+                    <li role="presentation">
+                        <a aria-controls="reading" data-toggle="tab" data-target="#readings" role="tab"
+                            ng-click="getAndPlotDeviceData()">
+                            <span translate>DEVICEDETAIL_READINGS_AND_SCHEDULE</span>
+                        </a>
+                    </li>
+                    <li role="presentation">
+                        <a aria-controls="reading" data-toggle="tab" data-target="#control-history" role="tab"
+                            ng-click="getDeviceControlHistory()">
+                            <span translate>DEVICEDETAIL_CONTROL_HISTORY</span>
+                        </a>
+                    </li>
+
+                </ul>
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div class="tab-pane active" id="basic-info" role="tabpanel">
+                        <div ng-include="'pages/devicedetail/basic_info_tab.html'"></div>
+                    </div>
+                    <div class="tab-pane" id="flex-settings" role="tabpanel">
+                        <div ng-include="'pages/devicedetail/flex_settings_tab.html'"></div>
+                    </div>
+                    <div class="tab-pane" id="readings" role="tabpanel">
+                        <div ng-include="'pages/devicedetail/readings_and_schedule_tab.html'"></div>
+                    </div>
+                    <div class="tab-pane" id="control-history" role="tabpanel">
+                        <div ng-include="'pages/devicedetail/control_history.html'"></div>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+        </div>
+        <!--tab ends-->
+        <div class="clearfix">
+        </div>
+    </div>
+</div>

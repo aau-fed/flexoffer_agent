@@ -44,7 +44,7 @@ import java.util.List;
 @XmlJavaTypeAdapter(value = DateAdapter.class, type = Date.class)
 
 public class DateAdapter extends XmlAdapter<String, Date> {
-    private List<SimpleDateFormat> knownPatterns = new ArrayList<SimpleDateFormat>();
+    private final List<SimpleDateFormat> knownPatterns = new ArrayList<SimpleDateFormat>();
 
     public DateAdapter() {
         this.knownPatterns.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX")); // This is the common supported format

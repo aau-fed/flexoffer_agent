@@ -60,17 +60,17 @@ public class ScheduleServiceImpl implements ScheduleService {
 
     private static final Logger logger = LoggerFactory.getLogger(ScheduleServiceImpl.class);
 
-    private ScheduleRepository scheduleRepository;
+    private final ScheduleRepository scheduleRepository;
 
-    private OnOffScheduleRepository onOffScheduleRepository;
+    private final OnOffScheduleRepository onOffScheduleRepository;
 
-    private DeviceDetailService deviceDetailService;
+    private final DeviceDetailService deviceDetailService;
 
-    private FOAService foaService;
+    private final FOAService foaService;
 
-    private ApplicationEventPublisher applicationEventPublisher;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
-    private ScheduleEventLogRepository scheduleEventLogRepository;
+    private final ScheduleEventLogRepository scheduleEventLogRepository;
 
     public ScheduleServiceImpl(ScheduleRepository scheduleRepository,
                                OnOffScheduleRepository onOffScheduleRepository,
@@ -92,7 +92,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     private Date getLocalTime(Date utcDate, String deviceID) {
         String time_zone = deviceDetailService.getDevice(deviceID).getTimeZone();
         int addMin = Integer.parseInt(time_zone.substring(1, 3)) * 60 + Integer.parseInt(time_zone.substring(4, 6));
-        if (time_zone.substring(0, 1).equals("-")) {
+        if (time_zone.charAt(0) == '-') {
             addMin = -addMin;
         }
         return new Date(utcDate.getTime() + (addMin * 60000));//milliseconds in a minute
@@ -124,10 +124,7 @@ public class ScheduleServiceImpl implements ScheduleService {
                 // check if new schedule complies with flex-offer constraints
                 if (schedule.isCorrect(tempFO)) {
 
-                    //TODO: check if flexoffer is already in execution mode,
-                    // this can be done by checking FO schedule data,
-                    // which has to be updated during schedule execution,, for e.g, tempFO.getState != execution
-                    if (tempFO.getState() == FlexOfferState.InAdaptation) {
+                   if (tempFO.getState() == FlexOfferState.InAdaptation) {
                         logger.warn("Schedule is rejected as FO: {} is in adaptation mode.", tempFO.getId());
                         scheduleValidationStatus = ScheduleValidationStatus.RejectedDueToAdaptation;
                     } else if (tempFO.getState() == FlexOfferState.Executed) {
@@ -162,6 +159,7 @@ public class ScheduleServiceImpl implements ScheduleService {
         scheduleEventLog.setTimestamp(new Date());
         scheduleEventLogRepository.save(scheduleEventLog);
     }
+
 
     @Override
     public void handleScheduleFromFMAN(ConcurrentHashMap<UUID, FlexOfferSchedule> schedules) {

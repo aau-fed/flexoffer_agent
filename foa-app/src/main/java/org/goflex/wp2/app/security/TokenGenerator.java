@@ -30,7 +30,7 @@ public class TokenGenerator {
         Map<String, Object> claims = new HashMap<>();
         claims.put(CLAIM_FOAID, foaID);
         //claims.put(ROLE, authorities.stream().map(s -> new SimpleGrantedAuthority(s.getAuthority())).filter(Objects::nonNull).collect(Collectors.toList()));
-        claims.put(ROLE, authorities.stream().map(ga -> new SimpleGrantedAuthority(((GrantedAuthority) ga).getAuthority())).filter(Objects::nonNull).collect(Collectors.toList()));
+        claims.put(ROLE, authorities.stream().map(ga -> new SimpleGrantedAuthority(ga.getAuthority())).filter(Objects::nonNull).collect(Collectors.toList()));
         claims.put(CLAIM_ISSUER, issuer);
         claims.put(CLAIM_CREATIONDATE, new Date());
         Date expirationDate = new Date(System.currentTimeMillis() + EXPIRATIONTIME);

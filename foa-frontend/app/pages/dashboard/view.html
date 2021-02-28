@@ -1,0 +1,254 @@
+<div class="col-md-9 sn-form-profile devicelocation-container">
+    <div class="col-md-12 pd-left-fix pd-right-fix">
+        <div class="chart-header">
+            <span class="chart-header-title" translate>
+                DASHBOARD_SUMMARY
+            </span>
+        </div>
+
+        <div class="scrolling-blocks">
+
+            <div ng-show="role=='ROLE_ADMIN'" class="col-md-6 tbb">
+                <a href="#!/user">
+                    <div class="s-block">
+                        <div id="s-block-prosumer" class="s-block-progress pull-left"></div>
+                        <div class="s-block-des pull-left">
+                            <h5 translate>DASHBOARD_ACTIVE_PROSUMERS</h5>
+                            <p><span class="red-caret">
+                                    <i class="icon" ng-class="{'ion-arrow-down-b': activeProsumersDelta < 0,
+                                                       'ion-arrow-up-b': activeProsumersDelta > 0}"></i>
+                                    <i class="icon" ng-class="{'ion-arrow-left-b': activeProsumersDelta === 0}"></i>
+                                    <i class="icon" ng-class="{'ion-arrow-right-b': activeProsumersDelta === 0}"></i>
+                                </span><small>{{activeProsumersDelta}}% <span
+                                        translate>DASHBOARD_KPI_MSG_YESTERDAY</span></small></p>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-6 tbb">
+                <a href="#!/devicelist">
+                    <div class="s-block">
+                        <div id="s-block-active" class="s-block-progress pull-left"></div>
+                        <!-- <span ng-bind="activeDevices"></span> -->
+                        <div class="s-block-des pull-left">
+                            <h5 translate>DASHBOARD_ACTIVE_DEVICES</h5>
+                            <p><span class="green-caret">
+                                    <i class="icon" ng-class="{'ion-arrow-down-b': activeDevicesDelta < 0,
+                                                       'ion-arrow-up-b': activeDevicesDelta > 0}"></i>
+                                    <i style="margin-right: 4px;" class="icon"
+                                        ng-class="{'ion-arrow-left-b': activeDevicesDelta === 0}"></i>
+                                    <i style="margin-right: 4px;" class="icon"
+                                        ng-class="{'ion-arrow-right-b': activeDevicesDelta === 0}"></i>
+                                </span><small>{{activeDevicesDelta}}% <span
+                                        translate>DASHBOARD_KPI_MSG_YESTERDAY</span></small></p>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-6 tbb">
+                <a href="#!/dashboard">
+                    <div class="s-block">
+                        <div id="s-block-flex" class="s-block-progress pull-left"></div>
+                        <!-- <span ng-bind="flexOfferCount"></span> -->
+                        <div class="s-block-des pull-left">
+                            <h5 translate>DASHBOARD_FLEX_OFFER</h5>
+                            <p><span class="purple-caret">
+                                    <i class="icon" ng-class="{'ion-arrow-down-b': flexOffersDelta < 0,
+                                                       'ion-arrow-up-b': flexOffersDelta > 0}"></i>
+                                    <i class="icon" ng-class="{'ion-arrow-left-b': flexOffersDelta === 0}"></i>
+                                    <i class="icon" ng-class="{'ion-arrow-right-b': flexOffersDelta === 0}"></i>
+                                </span><small>{{flexOffersDelta}}% <span
+                                        translate>DASHBOARD_KPI_MSG_YESTERDAY</span></small></p>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-6 tbb">
+                <a href="#!/dashboard">
+                    <div class="s-block">
+                        <div id="s-block-ratio" class="s-block-progress pull-left"></div>
+                        <div class="s-block-des pull-left">
+                            <h5 translate>DASHBOARD_FLEXIBILITY_RATIO</h5>
+                            <p><span class="blue-caret">
+                                    <i class="icon" ng-class="{'ion-arrow-down-b': flexRatioDelta < 0,
+                                                       'ion-arrow-up-b': flexRatioDelta > 0}"></i>
+                                    <i class="icon" ng-class="{'ion-arrow-left-b': flexRatioDelta == 0}"></i>
+                                    <i class="icon" ng-class="{'ion-arrow-right-b': flexRatioDelta == 0}"></i>
+                                </span><small>{{flexRatioDelta}}% <span
+                                        translate>DASHBOARD_KPI_MSG_YESTERDAY</span></small></p>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </a>
+            </div>
+
+
+            <div ng-show="role == 'ROLE_PROSUMER'" class="col-md-6 tbb">
+                <a href="#!/bill/{{username}}">
+                    <div class="s-block">
+                        <div id="s-block-rewards" class="s-block-progress pull-left"></div>
+                        <div class="s-block-des pull-left">
+                            <h5 translate>DASHBOARD_KPI_REWARDS</h5>
+                            <p><span class="red-caret">
+                                    <i class="icon" ng-class="{'ion-arrow-down-b': rewardsDelta < 0,
+                                                       'ion-arrow-up-b': rewardsDelta > 0}"></i>
+                                    <i class="icon" ng-class="{'ion-arrow-left-b': rewardsDelta == 0}"></i>
+                                    <i class="icon" ng-class="{'ion-arrow-right-b': rewardsDelta == 0}"></i>
+                                </span><small>{{rewardsDelta}}% <span
+                                        translate>DASHBOARD_KPI_MSG_LAST_MONTH</span></small></p>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="clearfix"></div>
+        </div>
+        <div class="clearfix">
+        </div>
+    </div>
+
+
+    <div class="chart-header">
+        <div class="col-md-12 pd-left-fix">
+            <span class="chart-header-title" translate>
+                DASHBOARD_LOCATION
+            </span>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="chart-header">
+                    <div class="col-md-12" style="padding: 10px 0 10px 0px;">
+                        <div class="col-md-12 pd-left-fix">
+
+                            <div class="col-md-8 pd-left-fix">
+                                <div>
+                                    <label
+                                        style="margin-right: 10px;">{{'DASHBOARD_SELECT_PLOT_TYPE' | translate}}:</label>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="state" ng-model="mapType" ng-click="renderMap()"
+                                            name="mapTypeselect">
+                                        <span style="font-size: small;" translate>DASHBOARD_DEVICE_STATE_PLOT</span>
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="voltage" ng-model="mapType" ng-click="renderMap()"
+                                            name="mapTypeselect">
+                                        <span style="font-size: small;" translate>DASHBOARD_VOLTAGE_PLOT</span>
+                                    </label>
+                                </div>
+
+                                <div ng-show="mapType == 'voltage'">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="col-md-2 pull-left" style="padding: 0;">
+                                                <input class="form-control" ng-model="voltageMin"
+                                                    style="font-size: x-small;"
+                                                    placeholder="{{'DASHBOARD_MIN_VOLT' | translate}}" type="text">
+                                            </div>
+                                            <div class="col-md-2 pull-left" style="padding: 0;">
+                                                <input class="form-control" ng-model="voltageMax"
+                                                    style="margin-left: 3; font-size: x-small;"
+                                                    placeholder="{{'DASHBOARD_MAX_VOLT' | translate}}" type="text">
+                                            </div>
+                                            <div class="col-md-2 pull-left" style="padding: 1;">
+                                                <button class="btn btn-default" ng-click="renderMap()" type="button"
+                                                    ng-disabled="!(voltageMin && voltageMax)">
+                                                    {{'DASHBOARD_APPLY' | translate}}
+                                                </button>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                            <div title="{{'TOOLTIP_DEVICE_VOLTAGE_IN_RANGE' | translate}}">
+                                                <img src="img/marker-green.png" style="height: 20px; margin-left: 10px;">
+                                                <label style="font-size: x-small;">
+                                                    {{'DASHBOARD_VOLTAGE_WITHIN_RANGE' | translate}}
+                                                </label>
+                                            </div>
+                                            <div title="{{'TOOLTIP_DEVICE_VOLTAGE_OUTSIDE_RANGE' | translate}}">
+                                                <img src="img/marker-red.png" style="height: 20px; margin-left: 10px;">
+                                                <label style="font-size: x-small;">
+                                                    {{'DASHBOARD_VOLTAGE_OUTSIDE_RANGE' | translate}}
+                                                </label>
+                                            </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <div ng-show="mapType == 'state'">
+                                    <div class="row">
+                                        <div>
+                                            <span title="{{'TOOLTIP_DEVICE_STATE_IDLE' | translate}}">
+                                                <img src="img/marker-yellow.png" style="height: 20px; margin-left: 40px;">
+                                                <label style="font-size: x-small;">Idle</label>
+                                            </span>
+                                            <span title="{{'TOOLTIP_DEVICE_STATE_OPERATING' | translate}}">
+                                                <img src="img/marker-green.png" style="height: 20px; margin-left: 40px;">
+                                                <label style="font-size: x-small;">Operating</label>
+                                            </span>
+                                            <span title="{{'TOOLTIP_DEVICE_STATE_DISCONNECTED' | translate}}">
+                                                <img src="img/marker-red.png" style="height: 20px; margin-left: 40px;">
+                                                <label style="font-size: x-small;">Disconnected</label>
+                                            </span>
+                                            <span title="{{'TOOLTIP_DEVICE_STATE_UNKNOWN' | translate}}">
+                                                <img src="img/marker-grey.png" style="height: 20px; margin-left: 40px;">
+                                                <label style="font-size: x-small;">Unknown</label>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+                            <div class="col-md-4 pd-left-fix" ng-show="role == 'ROLE_ADMIN'">
+                                <div>
+                                    <label style="margin-right: 10px;">{{'DASHBOARD_FILTER_BY' | translate}}:</label>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="users" ng-model="filterBy" ng-change="resetFilters()">
+                                        <span style="font-size: small;">{{'DASHBOARD_USER' | translate}}</span>
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" value="groups" ng-model="filterBy" ng-change="resetFilters()">
+                                        <span style="font-size: small;">{{'DASHBOARD_GROUP' | translate}}</span>
+                                    </label>
+                                </div>
+
+                                <select class="form-control" ng-model="selectedUser" ng-show="filterBy == 'users'"
+                                    ng-options="prosumer.userName for prosumer in prosumers"
+                                    ng-change="renderMap()">
+                                    <option value="" translate>DASHBOARD_SELECT_USER</option>
+                                </select>
+
+                                <select class="form-control" ng-model="selectedGroup" ng-show="filterBy == 'groups'"
+                                    ng-options="group.hierarchyId as (group.hierarchyName) for group in groups"
+                                    ng-change="renderMap()">
+                                    <option value="" translate>DASHBOARD_SELECT_GROUP</option>
+                                </select>
+
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="clearfix">
+
+                    </div>
+                </div>
+                <div id="map-container">
+                    <div id="map">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -170,9 +170,7 @@ public class FlexOfferTariffConstraint implements Serializable {
         if (Double.doubleToLongBits(minTariff) != Double
                 .doubleToLongBits(other.minTariff))
             return false;
-        if (Double.doubleToLongBits(maxTariff) != Double
-                .doubleToLongBits(other.maxTariff))
-            return false;
-        return true;
+        return Double.doubleToLongBits(maxTariff) == Double
+                .doubleToLongBits(other.maxTariff);
     }
 }

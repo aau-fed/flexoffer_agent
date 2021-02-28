@@ -53,7 +53,7 @@ public class ImplementationsHandler {
             xemsImplementaionType = "tpLinkDeviceService";
         } else if (plugType == PlugType.Simulated) {
             xemsImplementaionType = "simulatedDeviceService";
-        } else if (plugType == PlugType.SwissCase) {
+        } else if (plugType == PlugType.MQTT) {
             xemsImplementaionType = "swissDeviceService";
         }
         return this.xEmsServiceImplementations.get(xemsImplementaionType);

@@ -18,7 +18,7 @@ import java.util.List;
 @Service
 public class NonTCLWetDeviceForecastService implements ForecastService {
 
-    private DemandPredictionService demandPredictionService;
+    private final DemandPredictionService demandPredictionService;
 
     @Autowired
     public NonTCLWetDeviceForecastService(

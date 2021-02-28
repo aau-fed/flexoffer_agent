@@ -58,7 +58,6 @@ public class ScheduleDetails implements Serializable {
 
     @XmlElement
     private List<Integer> action = new ArrayList<Integer>();
-    ;
 
 
     public ScheduleDetails(String deviceID, UUID foID, int action) {

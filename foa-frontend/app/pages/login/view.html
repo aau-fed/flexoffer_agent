@@ -1,0 +1,64 @@
+<section class="main-content">
+    <div class="container-fluid">
+
+        <div class="pull-right">
+            <p>{{'CHANGE_LANGUAGE' | translate}}:</p>
+            <select style="height: 30px; margin-bottom: 10px;" class="form-control" ng-model="lang"
+                ng-change="changeLanguage()">
+                <option value="en" translate>BUTTON_LANG_EN</option>
+                <option value="de" translate>BUTTON_LANG_DE</option>
+            </select>
+        </div>
+
+
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-md-offset-3 col-md-6 sn-form">
+
+                    <h2 class="title text-center">{{'LOGIN_TITLE' | translate}}</h2>
+                    <small class="form-text sub-title text-center" translate="">LOGIN_SUBTITLE</small>
+
+                    <form ng-submit="submit()">
+                        <div ng-class="messageType" role="alert" ng-bind="messageText"></div>
+                        <div class="form-group" id="username">
+                            <label class="sr-only" for="input-email">Username</label>
+                            <input autofocus="" class="form-control form-control-danger" id="input-username"
+                                name="username" placeholder="{{'USER_USERNAME' | translate}}" required=""
+                                ng-model="username">
+                        </div>
+                        <div class="form-group" id="password">
+                            <label class="sr-only" for="input-password">Password</label>
+                            <input class="form-control form-control-danger" id="input-password" name="password"
+                                placeholder="{{'USER_PASSWORD' | translate}}" type="password" required=""
+                                ng-model="password">
+                        </div>
+                        <div class="form-group accept-group col-sm-12">
+                            <!-- <label class="custom-control custom-checkbox">
+                                <input class="custom-control-input" type="checkbox">
+                                <span class="custom-control-indicator"></span>
+                                <span class="custom-control-description">
+                                    {{'LOGIN_REMEMBER_ME' | translate}}
+                                </span> -->
+                            </label>
+                            <small>
+                                <a class="forgot-password" href="#!/forgotPassword"><strong>{{'FORGOT_PASSWORD' | translate}}</strong></a>
+                            </small>
+                        </div>
+                        <button class="btn btn-block btn-hero-success" type="submit" ng-disabled="isProcessing">
+                            {{'LOGIN_TITLE' | translate}}
+                        </button>
+                    </form>
+
+                    <div class="text-center" style="padding: 20px;">
+                        <small class="form-text">
+                            {{'LOGIN_DONT_HAVE_ACCOUNT' | translate}} <a href="#!/register"><strong>{{'SIGNUP_TITLE' |
+                                translate}}</strong></a>
+                        </small>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

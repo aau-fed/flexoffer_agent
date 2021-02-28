@@ -47,12 +47,12 @@ public class ConsumptionTimeSeries implements Serializable {
     /**
      * The value returned for intervals not explicitly set by the user.
      */
-    private double defaultValue = 0;
+    private final double defaultValue = 0;
     /**
      * The time series data
      */
 
-    private Map<Long, Double> data = new HashMap<>();
+    private final Map<Long, Double> data = new HashMap<>();
 
     /* Convert discrete FlexOffer time to absolute time */
     public static final Date toAbsoluteTime(long foTime) {
@@ -72,7 +72,7 @@ public class ConsumptionTimeSeries implements Serializable {
     }
 
     public void addData(Date time, Double val) {
-        data.put(this.toFlexOfferTime(time), val);
+        data.put(toFlexOfferTime(time), val);
 
     }
 

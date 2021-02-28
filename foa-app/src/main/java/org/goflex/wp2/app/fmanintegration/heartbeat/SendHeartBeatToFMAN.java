@@ -81,7 +81,7 @@ public class SendHeartBeatToFMAN implements FOAHeatBeatService {
             logger.info("Sending Heart Beat to FMAN");
             HttpHeaders headers = new HttpHeaders();
             String token = "Bearer ";
-            FmanUser usr = fmanUserService.getUserbyUsername("");
+            FmanUser usr = fmanUserService.getUserbyUsername("AAU");
             if (usr != null && !usr.getAPIKey().equals("")) {
                 token = token.concat(usr.getAPIKey());
                 Map<String, OperationInformation> optInfos = fmanMeasurementService.getOperationInfo();

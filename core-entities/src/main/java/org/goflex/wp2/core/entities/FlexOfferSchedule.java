@@ -300,9 +300,7 @@ public class FlexOfferSchedule implements Serializable {
         FlexOfferSchedule other = (FlexOfferSchedule) obj;
         if (!Arrays.equals(scheduleSlices, other.scheduleSlices))
             return false;
-        if (startInterval != other.startInterval)
-            return false;
-        return true;
+        return startInterval == other.startInterval;
     }
 
     public int getUpdateId() {
