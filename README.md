@@ -1,6 +1,6 @@
 ### FlexOffer Agent (FOA)
 
-The FlexOffer Agent (FOA) is an extensible and highly customizable software component of the Flexibility Modeling, Management, and Trading System that is responsible for the generation and execution of FOs for one or multiple flexible loads (both production and consumption). It forms individual flexoffers, delivers the individual flexoffers to the aggregator software (FMAN), receives disaggregated schedules from the FMAN, and activates the flexible loads according to the received schedules. This open-source version of the FOA software was developed by researchers at the Daisy group, Department of Computer Science, Aalborg University, Denmark. Its performance has been successfully demonstrated in Cyprus, Germany, and Switzerland during the H2020 GOFLEX project (https://goflex-project.eu).
+The FlexOffer Agent (FOA) is an extensible and highly customizable software component of the Flexibility Modeling, Management, and Trading System that is responsible for the generation and execution of FOs for one or multiple flexible loads (both production and consumption). It forms individual FlexOffers, delivers the individual FlexOffers to the aggregator software (FMAN), receives disaggregated schedules from the FMAN, and activates the flexible loads according to the received schedules. 
 
 ### What is this repository for? ###
 
@@ -8,17 +8,17 @@ In this repository, you will be able to find the source code of the FOA back-end
 and a user manual. The repository contains the following sub-systems:
 
  1. `foa-app` gathers power consumption data from individual flexible loads, aggregates it, and delivers it to the aggregator software (FMAN). It also receives disaggregated schedules from the FMAN, and activates the flexible loads (i.e., turning them on/off) according to the received schedules. 
- 2. `fo-generator` generates and delivers flexoffers to the aggregator software (FMAN). 
+ 2. `fo-generator` generates and delivers FlexOffers to the aggregator software (FMAN). 
  3. `foa-frontend` offers functionality to register new prosumers, add prosumer loads and configure load flexibility parameters. It communicates with `foa-app` backend to fetch and visualize flexible load live power consumtion and state as well as historical power consumption. 
  4. `fman-proxy` enables FOA to connect with multiple FMAN instances. In fact, all communication between FOA and one or more FMANs is handled by `fman-proxy`.
  5. `sys-monitor` monitors all flexible loads to ensure that they are restored to their normal power state after schedule execution. Normally, `foa-app` should handle device state restoration, but `sys-monitor` serves as an added safety mechnism since failure to restore device state can cause significant user discomfort. 
 
-
 ### How do I get set up? ###
 
-It is recommended to first get `foa-app` and `foa-frontend` up and running. This way a user can add some flexible loads for testing and play around with the UI. 
-After adding flexible loads, the next step would be setting up `fo-generator` to start generating flexoffers and use the UI to configure load flexibility parameters. 
-Then, at some point one may want to send generated flexoffers to an aggregator (FMAN). 
+It is recommended to first get `foa-app` and `foa-frontend` up and running. 
+This way a user can add some flexible loads for testing (see [Smartplug Installation Guide](./manuals/TP-Link_%20SmartPlug_%20Installation_Guide.pdf)) and play around with the UI (see [FOA manual](./manuals/FOA_Manual.pdf)). 
+After adding flexible loads, the next step would be setting up `fo-generator` to start generating FlexOffers and use the UI to configure load flexibility parameters (see [Flexibility Configuration Manual](./manuals/Load_Flexibility_Generation_And_Configuration_Manual.pdf)). 
+Then, at some point one may want to send generated FlexOffers to an aggregator (FMAN). 
 This can be done by setting up and running `fman-proxy` and providing it with the `url` of an FMAN. The default url used by `fman-proxy` is `http://localhost:8085`. 
 Later, when FMAN starts delivering execution schedules, `foa-app` will start sending `on/off` signals to
 the flexible loads to deliver the offered flexibility. At this point, `sys-monitor` should be set up 
@@ -57,16 +57,19 @@ Instructions for setting up these sub-systems are similar to the instructions fo
  
 1. Configure `Node.js` and the `Node Package Manage (npm)` tool. Download instructions can be found [here](https://nodejs.org/en/download/).
 
-2. Go to the `/foa-frontend/` and install all javascript dependencies using the comand:
-    ```npm install```
-
-3. Run the front-end application using the command:
-   ```node app.js```
-
+2. Go to the `/foa-frontend` and run the front-end application using the command:
+   ```npx http-server -o app/#```
 
 #### B. Automated set-up and running using `docker`
 
 It's easy to setup and run the app with docker. You must install `docker` and `docker-compose`. Installation instruction are available [here](https://docs.docker.com/docker-for-windows/install/)
+
+Open `.env` file and update the following with the correct values
+```
+MYSQL_ROOT_PASSWORD=
+MYSQL_USER=
+MYSQL_PASSWORD=
+```
 
 ##### Pull and run pre-built docker images
 
@@ -138,6 +141,11 @@ docker-compose up --no-deps -d <service-name>
 docker system prune -f
 ```
 
+### Manuals
+1. [Smartplug Installation Guide](./manuals/TP-Link_%20SmartPlug_%20Installation_Guide.pdf)
+2. [FlexOffer Agent Manual](./manuals/FOA_Manual.pdf).
+3. [Load Flexibility Generation and Configuration Manual](./manuals/Load_Flexibility_Generation_And_Configuration_Manual.pdf).
+
 ### Acknowledgments
 
-The project Generalized Operational FLEXibility for Integrating Renewables in the Distribution Grid (GOFLEX) has received funding from the European Union's Horizon 2020 research and innovation programme under grant agreement No 731232.
+This project is supported by Flexible Energy Denmark (FED) - a Danish digitization project aimed at turning Danish electricity consumption flexible to enable excess power production from wind turbines and solar cells. The project is funded by Innovation Fund Denmark.

@@ -1,6 +1,6 @@
 FROM nginx
 MAINTAINER "bn21@cs.aau.dk"
-LABEL vendor="AAU FED"
+LABEL vendor="FED"
 
 # copy project files
 COPY app /usr/share/nginx/html 

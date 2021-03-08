@@ -1,7 +1,7 @@
 var env = {};
 
 // Import variables if present (from env.js)
-if(window){  
+if (typeof window !== "undefined") {
   Object.assign(env, window.__env);
 }
 

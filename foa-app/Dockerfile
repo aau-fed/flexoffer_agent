@@ -1,7 +1,7 @@
 # Use the Oracal Java 8 as parent image
 FROM java:8
 MAINTAINER "bn21@cs.aau.dk"
-LABEL vendor="AAU FED"
+LABEL vendor="FED"
 
 # Set the working directory to /app
 WORKDIR /app
