@@ -1,72 +1,115 @@
 ### FlexOffer Agent (FOA)
 
-The FlexOffer Agent (FOA) is a is an extensible and highly customizable software component of the Flexibility Modeling, Management, and Trading System that is responsible for the generation and execution of FOs for one or multiple flexible loads (both production and consumption). It forms individual flexoffers, delivers the individual flexoffers to the aggregator software (FMAN), receives disaggregated schedules from the FMAN, and activates the flexible loads according to the received schedules. This open-source version of the FOA software was developed by researchers at the Daisy group, Department of Computer Science, Aalborg University, Denmark. Its performance has been successfully demonstrated in Cyprus, Germany, and Switzerland during the H2020 GOFLEX project (https://goflex-project.eu).
+The FlexOffer Agent (FOA) is an extensible and highly customizable software component of the Flexibility Modeling, Management, and Trading System that is responsible for the generation and execution of FOs for one or multiple flexible loads (both production and consumption). It forms individual flexoffers, delivers the individual flexoffers to the aggregator software (FMAN), receives disaggregated schedules from the FMAN, and activates the flexible loads according to the received schedules. This open-source version of the FOA software was developed by researchers at the Daisy group, Department of Computer Science, Aalborg University, Denmark. Its performance has been successfully demonstrated in Cyprus, Germany, and Switzerland during the H2020 GOFLEX project (https://goflex-project.eu).
+
+### What is this repository for? ###
+
+In this repository, you will be able to find the source code of the FOA back-end and front-end sub-systems, installation and deployment instructions, 
+and a user manual. The repository contains the following sub-systems:
+
+ 1. `foa-app` gathers power consumption data from individual flexible loads, aggregates it, and delivers it to the aggregator software (FMAN). It also receives disaggregated schedules from the FMAN, and activates the flexible loads (i.e., turning them on/off) according to the received schedules. 
+ 2. `fo-generator` generates and delivers flexoffers to the aggregator software (FMAN). 
+ 3. `foa-frontend` offers functionality to register new prosumers, add prosumer loads and configure load flexibility parameters. It communicates with `foa-app` backend to fetch and visualize flexible load live power consumtion and state as well as historical power consumption. 
+ 4. `fman-proxy` enables FOA to connect with multiple FMAN instances. In fact, all communication between FOA and one or more FMANs is handled by `fman-proxy`.
+ 5. `sys-monitor` monitors all flexible loads to ensure that they are restored to their normal power state after schedule execution. Normally, `foa-app` should handle device state restoration, but `sys-monitor` serves as an added safety mechnism since failure to restore device state can cause significant user discomfort. 
 
 
+### How do I get set up? ###
+
+It is recommended to first get `foa-app` and `foa-frontend` up and running. This way a user can add some flexible loads for testing and play around with the UI. 
+After adding flexible loads, the next step would be setting up `fo-generator` to start generating flexoffers and use the UI to configure load flexibility parameters. 
+Then, at some point one may want to send generated flexoffers to an aggregator (FMAN). 
+This can be done by setting up and running `fman-proxy` and providing it with the `url` of an FMAN. The default url used by `fman-proxy` is `http://localhost:8085`. 
+Later, when FMAN starts delivering execution schedules, `foa-app` will start sending `on/off` signals to
+the flexible loads to deliver the offered flexibility. At this point, `sys-monitor` should be set up 
+so that flexible loads are not allowed to operate in manner that will cause discomfort.
+
+#### A. Manually setting-up and running FOA ####
+
+##### Common steps for all back-end systems #####
+
+1. Configure `JDK` and `Apache Maven` environments. FOA requires `JDK 8` which can be found [here](https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html). Instructions for installing `Apache Maven` are available [here](https://maven.apache.org/install.html).
+
+2. Install, configure, and run `MySQL` database management system. Instructions are available [here](https://dev.mysql.com/doc/mysql-installation-excerpt/8.0/en/installing.html).
 
 
-### Installation using docker
+##### Setting-up `foa-app`
 
-It's very easy to setup and run the app with docker. All you need to do is build a docker image, then either run it in a container locally or push the image to a remote server and run it there. You must install `docker` and `docker-compose` both locally and on remote server if not installed already. 
+1. Update configuration file `/foa-app/src/main/resources/application.properties`. At the minimum, you will need to update the following:
+ ```
+ spring.datasource.url=jdbc:mysql://localhost:3306/foa?useSSL=false&serverTimezone=CET
+ spring.datasource.username=fed
+ spring.datasource.password=password
+ ```
+ The default db is `foa` which should be created if it does not exist. Also, the default password is `password`, which should obviously be changed.  
 
-* Install Docker on [Ubuntu 16](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04) or [Ubuntu 18](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04)
+2. Go to the root folder and run: 
+ ```mvn clean compile package```
+	
+3. Run the FMAN back-end using the command:
+ ```java -jar foa-app/target/foa-app.jar```
 
-* Install Docker Compose
+##### Setting-up `fo-generator`, `fman-proxy`, and `sys-monitor` #####
 
-  ```bash
-  sudo curl -L "https://github.com/docker/compose/releases/download/1.23.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-  sudo chmod +x /usr/local/bin/docker-compose
-  docker-compose --version
-  ```````
+Instructions for setting up these sub-systems are similar to the instructions for setting up `foa-app` provided above. You will need to change `foa-app` with one of the other sub-systems.
 
-#### Build Project
+##### Setting-up the front-end #####
+ 
+1. Configure `Node.js` and the `Node Package Manage (npm)` tool. Download instructions can be found [here](https://nodejs.org/en/download/).
+
+2. Go to the `/foa-frontend/` and install all javascript dependencies using the comand:
+    ```npm install```
+
+3. Run the front-end application using the command:
+   ```node app.js```
+
+
+#### B. Automated set-up and running using `docker`
+
+It's easy to setup and run the app with docker. You must install `docker` and `docker-compose`. Installation instruction are available [here](https://docs.docker.com/docker-for-windows/install/)
+
+##### Pull and run pre-built docker images
 
 ```bash
-mvn clean install -DskipTests
+docker-compose pull # you will need to install docker-compose if not installed already
+
+# to launch a service, you must be in the same directory containing docker-compose.yml
+
+# run `foa-app`
+docker-compose up foa-app
+
+# see `foa-app` logs
+docker-compose logs -f foa-app
+
+# run `fo-generator`
+docker-compose up fo-generator
+
+# run `fman-proxy`
+docker-compose up fman-proxy
+
+# run `sys-monitor`
+docker-compose up sys-monitor
+
+# run `fman-frontend`
+docker-compose up foa-frontend
+
+# run all
+docker-compose up
 ```
 
-#### Build docker image
+##### Build and run docker images locally
 
 ```bash
+# compile 
+mvn clean compile package -DskipTests
+
+# build docker image
 docker-compose build
 ```
 
-#### Push docker image to remote private docker registry
+After building docker images, you can run them using the above commands
 
-```bash
-# one-time login to private docker registry
-docker login repo.treescale.com # it will ask for username and password
-
-docker-compose push
-```
-
-#### On remote server, pull and run docker image from private registry
-
-```bash
-# copy docker-compose.yml to remote server
-scp docker-compose.yml <username>@<remote-server-address>:/remote/dir/path
-
-# login to remote server and navigate to the directory containing docker-compose.yml
-ssh <username>@<remote-server-address>
-cd /remote/dir/path
-
-# one-time login to private docker registry
-docker login repo.treescale.com # you will need to install docker if not installed already
-docker-compose pull # you will need to install docker-compose if not installed already
-
-# launch a container (you must be inside the directory containing docker-compose.yml)
-docker-compose -d up
-```
-
-Alternatively, you can perform one-time login to the private docker registry on the remote server as shown above, then
-directly deploy container from your local machine as follows:
-```bash
-# Note: you must be logged in to the private docker registry to run these commands
-cat docker-compose | ssh <username>@<remote-server-address> "docker-compose -f - pull"
-cat docker-compose | ssh <username>@<remote-server-address> "docker-compose -f - up -d"
-```
-
-#### Connect/Disconnect to/from a container
+##### Connect/Disconnect to/from a container
 
 ```bash
 # attach to a running container
@@ -78,8 +121,8 @@ CTRL-p, CTRL-q
 
 After the container is up and running, the services can be accessed on ports configured in `docker-compose.yml`
 
-#### Redeployment after changing/updating code
-When you make changes to your app code, remember to rebuild your image and recreate your appâ€™s containers.
+##### Redeployment after changing/updating code
+When you make changes to your app code, remember to rebuild your image and recreate your docker containers.
 To redeploy a service, use the following command the following commands.
 The first rebuilds the image for the service and then stop, destroy, and recreate just the web service.
 The --no-deps flag prevents `docker-compose` from also recreating any services which this service depends on.
@@ -89,16 +132,11 @@ docker-compose build --pull <service-name>
 docker-compose up --no-deps -d <service-name>
 ```
 
-#### Remove unnecessary docker images
+##### Remove unnecessary docker images
 
 ```bash
-# locally
 docker system prune -f
-
-# from remote server
-ssh <username>@<remote-server-address> "docker system prune -f"
 ```
-
 
 ### Acknowledgments
 
